@@ -1,6 +1,9 @@
 package ImageMod.commands;
 
 import ImageMod.util.DirectoryArgument;
+import ImageMod.util.ImageBlock;
+import ImageMod.util.ImageCreationData;
+import ImageMod.util.ImageCreationThread;
 import ImageMod.util.PathArgument;
 import ImageMod.util.ResizeableImage;
 import com.mojang.brigadier.CommandDispatcher;
@@ -11,7 +14,6 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
 import net.minecraft.block.CoralBlock;
 import net.minecraft.block.LeavesBlock;
 import net.minecraft.block.material.Material;
@@ -43,104 +45,10 @@ public class ImageCommand {
     /*=======================vars=========================*/
     /*====================================================*/
 
+    public static ArrayList<ImageBlock> blockList;
+	
     private static final Logger LOGGER = LogManager.getLogger();
     private static final PathArgument imageSourceArgument = new PathArgument();
-    private static ArrayList<ImageBlock> blockList;
-
-    /*====================================================*/
-    /*=====================classes========================*/
-    /*====================================================*/
-
-    /*
-    * Class for storing a state and it's respective
-    * texture to use for image creation
-    * */
-    private static final class ImageBlock {
-        public BlockState      blockState;
-        public ResizeableImage image;
-
-        ImageBlock(BlockState blockState, ResizeableImage image) {
-            this.blockState  = blockState;
-            this.image       = image;
-        }
-    }
-
-    private static final class ImageCreationData {
-        public ResizeableImage  image;
-        @SuppressWarnings("unused")
-		public Entity           invoker;
-        public ServerWorld      world;
-        public BlockPos         pos;
-        public Direction        xDir, yDir;
-        public int              blockWidth, blockHeight;
-    }
-
-    private static final class ImageCreationThread extends Thread {
-
-        /* vars */
-        private ImageCreationData data;
-
-        /* classes */
-
-        private static class BlockPixelThread extends Thread {
-
-            private ImageCreationData data;
-            private ArrayList<ImageBlock> preSized;
-            private final int x, y;
-            private final int tileWidth, tileHeight;
-
-            BlockPixelThread(ImageCreationData data, ArrayList<ImageBlock> preSized, final int x, final int y, final int tileWidth, final int tileHeight) {
-                this.data       = data;
-                this.preSized   = preSized;
-                this.x          = x;
-                this.y          = y;
-                this.tileWidth  = tileWidth;
-                this.tileHeight = tileHeight;
-            }
-
-            public void run() {
-                final int imgX = (this.x * this.data.image.width)  / this.data.blockWidth;
-                final int imgY = (this.y * this.data.image.height) / this.data.blockHeight;
-                BlockPos relativePos    = this.data.pos.relative(this.data.xDir, this.x).relative(this.data.yDir, this.y);
-                ResizeableImage tileImg = this.data.image.subImage(imgX, imgY, this.tileWidth, this.tileHeight);
-                BlockState bestState    = ImageCommand.getBestFit(tileImg, this.preSized);
-                this.data.world.setBlockAndUpdate(relativePos, bestState);
-            }
-        }
-
-        /* Constructor */
-        public ImageCreationThread(ImageCreationData data) {
-            this.data = data;
-        }
-
-        public void run() {
-
-            /*
-            * Image meta-data
-            * */
-            final int tileWidth  = Math.max(this.data.image.width  / this.data.blockWidth, 1);
-            final int tileHeight = Math.max(this.data.image.height / this.data.blockHeight, 1);
-
-            /*
-            * Pre-size block images to tileImage size for
-            * performance gain and to make it easy to
-            * compare later.
-            * */
-            ArrayList<ImageBlock> preSized = new ArrayList<>();
-            for (ImageBlock block : ImageCommand.blockList) {
-                preSized.add(new ImageBlock(block.blockState, ResizeableImage.resize(block.image, tileWidth, tileHeight)));
-            }
-
-            /*
-             * Go through tiles and pick best block fit for each
-             * */
-            for (int y = 0; y < this.data.blockHeight; y++) {
-                for (int x = 0; x < this.data.blockWidth; x++) {
-                    new BlockPixelThread(this.data, preSized, x, y, tileWidth, tileHeight).run();
-                }
-            }
-        }
-    }
 
     /*====================================================*/
     /*==================public methods====================*/
@@ -166,10 +74,10 @@ public class ImageCommand {
         LiteralArgumentBuilder<CommandSource> root = Commands.literal("image");
 
         /* Create */
-        LiteralArgumentBuilder<CommandSource> createLiteral = Commands.literal("create");
+        LiteralArgumentBuilder<CommandSource> createLiteral = Commands.literal("create").requires((source) -> { return source.hasPermission(2); });
 
-        LiteralArgumentBuilder<CommandSource> wLiteral  = Commands.literal("-width");
-        LiteralArgumentBuilder<CommandSource> hLiteral  = Commands.literal("-height");
+        LiteralArgumentBuilder<CommandSource> wLiteral  = Commands.literal("width");
+        LiteralArgumentBuilder<CommandSource> hLiteral  = Commands.literal("height");
         LiteralArgumentBuilder<CommandSource> whInfoLiteral = Commands.literal("~ ~");
         
         RequiredArgumentBuilder<CommandSource, Path> srcArgument        = Commands.argument("src", imageSourceArgument);
@@ -302,7 +210,10 @@ public class ImageCommand {
 
         return -1;
     }
-
+    
+    /*
+     * Reload command variables
+     * */
     private static int reloadCommand(CommandContext<CommandSource> ctx) {
     	ImageCommand.reload();
     	return 1;
@@ -341,28 +252,6 @@ public class ImageCommand {
         data.blockHeight = h;
 
         new ImageCreationThread(data).run();
-    }
-
-    /*
-    * Get best BlockState fit for an image
-    * Get a dissimilarity score for each option
-    * Save record low and return when all options
-    * has been tried
-    * */
-    private static BlockState getBestFit(ResizeableImage img, ArrayList<ImageBlock> blockList) {
-
-        BlockState ret = Blocks.AIR.defaultBlockState();
-        int minScore = img.getSimilarity(ResizeableImage.getTransparant(img.width, img.height));
-
-        for (ImageBlock block : blockList) {
-            int score = block.image.getSimilarity(img);
-            if (score < minScore) {
-                minScore = score;
-                ret = block.blockState;
-            }
-        }
-
-        return ret;
     }
 
     /*
