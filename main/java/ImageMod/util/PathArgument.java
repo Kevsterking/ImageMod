@@ -107,7 +107,6 @@ public class PathArgument implements ArgumentType<Path> {
         String ret = "";
         Path relative = this.rootDir.relativize(path);
 
-        String rel = relative.toString();
         if (!relative.toString().contains("..") || relative.toString() == "") {
             path = relative;
         }

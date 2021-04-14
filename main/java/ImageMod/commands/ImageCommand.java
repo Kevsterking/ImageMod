@@ -5,7 +5,6 @@ import ImageMod.util.PathArgument;
 import ImageMod.util.ResizeableImage;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
-import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
@@ -13,6 +12,8 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
+import net.minecraft.block.CoralBlock;
+import net.minecraft.block.LeavesBlock;
 import net.minecraft.block.material.Material;
 import net.minecraft.client.Minecraft;
 import net.minecraft.command.CommandSource;
@@ -66,7 +67,8 @@ public class ImageCommand {
 
     private static final class ImageCreationData {
         public ResizeableImage  image;
-        public Entity           invoker;
+        @SuppressWarnings("unused")
+		public Entity           invoker;
         public ServerWorld      world;
         public BlockPos         pos;
         public Direction        xDir, yDir;
@@ -164,21 +166,23 @@ public class ImageCommand {
         LiteralArgumentBuilder<CommandSource> root = Commands.literal("image");
 
         /* Create */
-        LiteralArgumentBuilder createLiteral = Commands.literal("create");
+        LiteralArgumentBuilder<CommandSource> createLiteral = Commands.literal("create");
 
-        LiteralArgumentBuilder wLiteral  = Commands.literal("-width");
-        LiteralArgumentBuilder hLiteral  = Commands.literal("-height");
-        LiteralArgumentBuilder whInfoLiteral = Commands.literal("~ ~");
+        LiteralArgumentBuilder<CommandSource> wLiteral  = Commands.literal("-width");
+        LiteralArgumentBuilder<CommandSource> hLiteral  = Commands.literal("-height");
+        LiteralArgumentBuilder<CommandSource> whInfoLiteral = Commands.literal("~ ~");
+        
+        RequiredArgumentBuilder<CommandSource, Path> srcArgument        = Commands.argument("src", imageSourceArgument);
+        RequiredArgumentBuilder<CommandSource, Path> srcArgumentFinal   = Commands.argument("src", imageSourceArgument).executes(ImageCommand::createImageCommand);
 
-        RequiredArgumentBuilder srcArgument        = Commands.argument("src", imageSourceArgument);
-        RequiredArgumentBuilder srcArgumentFinal   = Commands.argument("src", imageSourceArgument).executes(ImageCommand::createImageCommand);
-
-        RequiredArgumentBuilder widthArgument      = Commands.argument("width", IntegerArgumentType.integer());
-        RequiredArgumentBuilder widthArgumentFinal = Commands.argument("width", IntegerArgumentType.integer()).executes(ImageCommand::createImageCommand);
+        RequiredArgumentBuilder<CommandSource, Integer> widthArgument      = Commands.argument("width", IntegerArgumentType.integer());
+        RequiredArgumentBuilder<CommandSource, Integer> widthArgumentFinal = Commands.argument("width", IntegerArgumentType.integer()).executes(ImageCommand::createImageCommand);
 
         //RequiredArgumentBuilder heightArgument      = Commands.argument("height", IntegerArgumentType.integer());
-        RequiredArgumentBuilder heightArgumentFinal = Commands.argument("height", IntegerArgumentType.integer()).executes(ImageCommand::createImageCommand);
+        RequiredArgumentBuilder<CommandSource, Integer> heightArgumentFinal = Commands.argument("height", IntegerArgumentType.integer()).executes(ImageCommand::createImageCommand);
 
+        LiteralArgumentBuilder<CommandSource> reload = Commands.literal("reload").executes(ImageCommand::reloadCommand);
+        
         wLiteral.then(widthArgumentFinal);
         hLiteral.then(heightArgumentFinal);
         widthArgument.then(heightArgumentFinal);
@@ -194,12 +198,12 @@ public class ImageCommand {
         //LiteralArgumentBuilder undoLiteral = Commands.literal("undo").executes(ImageCommand::undoCommand);
 
         /* SetDirectory */
-        LiteralArgumentBuilder setDirectoryLiteral = Commands.literal("setDirectory");
-        RequiredArgumentBuilder directoryArgument  = Commands.argument("dir", new DirectoryArgument()).executes(ImageCommand::setDirectoryCommand);
+        LiteralArgumentBuilder<CommandSource> setDirectoryLiteral = Commands.literal("setDirectory");
+        RequiredArgumentBuilder<CommandSource, Path> directoryArgument  = Commands.argument("dir", new DirectoryArgument()).executes(ImageCommand::setDirectoryCommand);
 
         setDirectoryLiteral.then(directoryArgument);
 
-        root.then(createLiteral).then(setDirectoryLiteral);
+        root.then(createLiteral).then(setDirectoryLiteral).then(reload);
 
         dispatcher.register(root);
     }
@@ -278,9 +282,11 @@ public class ImageCommand {
     }
 
     // TODO: implement
+    /*
     private static int undoCommand(CommandContext<CommandSource> ctx) {
         return -1;
     }
+	*/
 
     /*
     * Set the root directory for where to look for images
@@ -297,6 +303,11 @@ public class ImageCommand {
         return -1;
     }
 
+    private static int reloadCommand(CommandContext<CommandSource> ctx) {
+    	ImageCommand.reload();
+    	return 1;
+    }
+    
     /*
     * Create the image as an in game block pixel-art
     * */
@@ -374,9 +385,35 @@ public class ImageCommand {
             Material m    = state.getMaterial();
             VoxelShape vs = state.getShape(blocKReader, BlockPos.ZERO);
 
-            if (!Block.isShapeFullBlock(vs) || !m.isSolid() || block.hasTileEntity(block.defaultBlockState())) {
-                LOGGER.error(block.getName().getString() + " is not applicable");
-                continue;
+            boolean applicable = true;
+            
+            if (!Block.isShapeFullBlock(vs)) {
+            	applicable = false;
+            }
+            
+            if (!m.isSolid()) {
+            	applicable = false;
+            }
+            
+            if (block.hasTileEntity(state)) {
+            	applicable = false;
+            }
+            
+            if (block.getLightValue(state, blocKReader, BlockPos.ZERO) > 0) {
+            	applicable = false;
+            }
+            
+            if (block instanceof CoralBlock) {
+            	applicable = false;
+            }
+            
+            if (block instanceof LeavesBlock) {
+            	applicable = false;
+            }
+            
+            if (!applicable) {
+            	 LOGGER.error(block.getName().getString() + " is not applicable");
+                 continue;
             }
 
             ResourceLocation bLoc = block.getRegistryName();
