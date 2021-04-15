@@ -70,40 +70,34 @@ public class ImageCommand {
 
         ImageCommand.setup();
 
-        /* /image */
+        /* image */
         LiteralArgumentBuilder<CommandSource> root = Commands.literal("image");
 
         /* Create */
         LiteralArgumentBuilder<CommandSource> createLiteral = Commands.literal("create").requires((source) -> { return source.hasPermission(2); });
 
-        LiteralArgumentBuilder<CommandSource> wLiteral  = Commands.literal("width");
-        LiteralArgumentBuilder<CommandSource> hLiteral  = Commands.literal("height");
+        LiteralArgumentBuilder<CommandSource> wLiteral  	= Commands.literal("-width");
+        LiteralArgumentBuilder<CommandSource> hLiteral  	= Commands.literal("-height");
         LiteralArgumentBuilder<CommandSource> whInfoLiteral = Commands.literal("~ ~");
         
         RequiredArgumentBuilder<CommandSource, Path> srcArgument        = Commands.argument("src", imageSourceArgument);
-        RequiredArgumentBuilder<CommandSource, Path> srcArgumentFinal   = Commands.argument("src", imageSourceArgument).executes(ImageCommand::createImageCommand);
+        //RequiredArgumentBuilder<CommandSource, Path> srcArgumentFinal   = Commands.argument("src", imageSourceArgument).executes(ImageCommand::createImageCommand);
 
-        RequiredArgumentBuilder<CommandSource, Integer> widthArgument      = Commands.argument("width", IntegerArgumentType.integer());
-        RequiredArgumentBuilder<CommandSource, Integer> widthArgumentFinal = Commands.argument("width", IntegerArgumentType.integer()).executes(ImageCommand::createImageCommand);
+        RequiredArgumentBuilder<CommandSource, Integer> wArgument      = Commands.argument("width", IntegerArgumentType.integer());
+        RequiredArgumentBuilder<CommandSource, Integer> wArgumentFinal = Commands.argument("width", IntegerArgumentType.integer()).executes(ImageCommand::createImageCommand);
 
         //RequiredArgumentBuilder heightArgument      = Commands.argument("height", IntegerArgumentType.integer());
-        RequiredArgumentBuilder<CommandSource, Integer> heightArgumentFinal = Commands.argument("height", IntegerArgumentType.integer()).executes(ImageCommand::createImageCommand);
+        RequiredArgumentBuilder<CommandSource, Integer> hArgumentFinal = Commands.argument("height", IntegerArgumentType.integer()).executes(ImageCommand::createImageCommand);
 
         LiteralArgumentBuilder<CommandSource> reload = Commands.literal("reload").executes(ImageCommand::reloadCommand);
         
-        wLiteral.then(widthArgumentFinal);
-        hLiteral.then(heightArgumentFinal);
-        widthArgument.then(heightArgumentFinal);
+        wLiteral.then(wArgumentFinal);
+        hLiteral.then(hArgumentFinal);
+        wArgument.then(hArgumentFinal);
 
-        srcArgument.then(wLiteral).then(hLiteral).then(whInfoLiteral);
-        srcArgument.then(widthArgument);
+        srcArgument.then(wLiteral).then(hLiteral).then(whInfoLiteral).then(wArgument);
 
-        createLiteral.then(srcArgument).then(srcArgumentFinal);
-
-        //ArgumentBuilder srcArgument = Commands.argument("src", new PathArgument());
-
-        /* Undo */
-        //LiteralArgumentBuilder undoLiteral = Commands.literal("undo").executes(ImageCommand::undoCommand);
+        createLiteral.then(srcArgument);//.then(srcArgumentFinal);
 
         /* SetDirectory */
         LiteralArgumentBuilder<CommandSource> setDirectoryLiteral = Commands.literal("setDirectory");
@@ -241,17 +235,17 @@ public class ImageCommand {
         BlockPos  invokerPos = invoker.blockPosition();
         BlockPos  startPos   = invokerPos.relative(viewDir, 2);
 
-        ImageCreationData data = new ImageCreationData();
-        data.image       = image;
-        data.invoker     = invoker;
-        data.world       = world;
-        data.pos         = startPos;
-        data.xDir        = rightDir;
-        data.yDir        = Direction.UP;
-        data.blockWidth  = w;
-        data.blockHeight = h;
+        ImageCreationData creationData = new ImageCreationData();
+        creationData.image       = image;
+        creationData.invoker     = invoker;
+        creationData.world       = world;
+        creationData.pos         = startPos;
+        creationData.xDir        = rightDir;
+        creationData.yDir        = Direction.UP;
+        creationData.blockWidth  = w;
+        creationData.blockHeight = h;
 
-        new ImageCreationThread(data).run();
+        new ImageCreationThread(creationData).start();
     }
 
     /*

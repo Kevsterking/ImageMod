@@ -80,15 +80,17 @@ public class WorldTransformAction {
 	private void placeStructure(BlockState[][][] structure) {
 		
 		for (int x = 0; x < this.creationData.w; x++) {
-			for (int y = 0; y < this.creationData.w; y++) {
-				for (int z = 0; z < this.creationData.w; z++) {
+			for (int y = 0; y < this.creationData.h; y++) {
+				for (int z = 0; z < this.creationData.d; z++) {
 		
 					BlockPos pos = this.creationData.origin
 							.relative(this.creationData.x, x)
 							.relative(this.creationData.y, y)
 							.relative(this.creationData.z, z);
 					
-					this.creationData.world.setBlockAndUpdate(pos, structure[x][y][z]);
+					BlockState state = structure[x][y][z];
+					
+					this.creationData.world.setBlockAndUpdate(pos, state);
 				}
 			}
 		}
