@@ -9,9 +9,9 @@ public class ImageCreationWorker extends Thread {
 
 	/* Vars */
 	private WorldTransformAction 	transform;
-    private ImageCreationData 		creationData;
-    private ArrayList<ImageBlock> 	preSized;
-    private final int 				tileWidth, tileHeight;
+	private ImageCreationData 		creationData;
+	private ArrayList<ImageBlock> 	preSized;
+	private final int 				tileWidth, tileHeight;
 
     private int xMin, xMax, yMin, yMax;
     
@@ -31,10 +31,10 @@ public class ImageCreationWorker extends Thread {
     public void run() {
     	for (int y = yMin; y < yMax; y++) {
     		for (int x = xMin; x < xMax; x++) {
-    			final int imgX = (x * this.creationData.image.width)  / this.creationData.blockWidth;
-    	        final int imgY = (y * this.creationData.image.height) / this.creationData.blockHeight;
-    	        ResizeableImage tileImg = this.creationData.image.subImage(imgX, imgY, this.tileWidth, this.tileHeight);
-    	        this.transform.set(x, y, this.getBestFit(tileImg, this.preSized));
+				final int imgX = (x * this.creationData.image.width)  / this.creationData.blockWidth;
+				final int imgY = (y * this.creationData.image.height) / this.creationData.blockHeight;
+				ResizeableImage tileImg = this.creationData.image.subImage(imgX, imgY, this.tileWidth, this.tileHeight);
+				this.transform.set(x, y, this.getBestFit(tileImg, this.preSized));
     		}
     	}
     }
