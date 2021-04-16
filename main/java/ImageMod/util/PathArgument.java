@@ -53,7 +53,8 @@ public class PathArgument implements ArgumentType<Path> {
         throw new FileNotFoundException();
     }
     public Path getPath(String str) throws FileNotFoundException {
-        try {
+        
+    	try {
             return this.getPath(Paths.get(str));
         } catch (Exception e) {}
 
@@ -106,17 +107,21 @@ public class PathArgument implements ArgumentType<Path> {
 
     private String getFormattedPathString(Path path) {
 
-        String ret = "";
-        Path relative = this.rootDir.relativize(path);
+    	String ret = "";
+        
+    	Path placeholder;
+    	Path relative = this.rootDir.relativize(path);
 
-        if (!relative.toString().contains("..") || relative.toString() == "") {
-            path = relative;
+        if (!relative.toString().contains("..")) {
+            placeholder = relative;
+        } else {
+        	placeholder = path;
         }
-
+        
         if (path.toFile().isDirectory()) {
-            ret = path.toString() + "/";
+            ret = placeholder.toString() + "/";
         } else  {
-            ret = path.toString();
+            ret = placeholder.toString();
         }
 
         ret = ret.replace("\\", "/");

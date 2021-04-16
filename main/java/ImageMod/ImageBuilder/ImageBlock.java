@@ -1,4 +1,4 @@
-package ImageMod.util;
+package ImageMod.ImageBuilder;
 
 import net.minecraft.block.BlockState;
 

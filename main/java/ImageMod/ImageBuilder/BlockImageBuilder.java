@@ -1,8 +1,10 @@
-package ImageMod.util;
+package ImageMod.ImageBuilder;
 
 import java.util.ArrayList;
 
 import ImageMod.commands.ImageCommand;
+import WorldTransformer.WorldTransformAction;
+import WorldTransformer.WorldTransformCreationData;
 
 public class BlockImageBuilder extends Thread {
 
@@ -42,7 +44,7 @@ public class BlockImageBuilder extends Thread {
 		/*
 		 * Setup data for world creation action 
 		 * */
-		TransformCreationData transformData = new TransformCreationData();
+		WorldTransformCreationData transformData = new WorldTransformCreationData();
         transformData.world 	= creationData.world;
         transformData.pos 		= creationData.pos;
         transformData.xDir 		= creationData.xDir;

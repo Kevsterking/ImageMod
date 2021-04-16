@@ -1,10 +1,10 @@
-package ImageMod.util;
+package WorldTransformer;
 
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.server.ServerWorld;
 
-public class TransformCreationData {
+public class WorldTransformCreationData {
 	public ServerWorld 	world;
 	public BlockPos 	pos;
 	public Direction   	xDir, yDir, zDir;

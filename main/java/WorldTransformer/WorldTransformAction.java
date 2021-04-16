@@ -1,4 +1,4 @@
-package ImageMod.util;
+package WorldTransformer;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.util.math.BlockPos;
@@ -9,12 +9,12 @@ public class WorldTransformAction {
     /*=======================vars=========================*/
     /*====================================================*/
 	
-	public TransformCreationData creationData;
+	public WorldTransformCreationData creationData;
 	
 	public BlockState[][][] previousStructure;
 	public BlockState[][][] structure;
 	
-	public WorldTransformAction(TransformCreationData creationData) {
+	public WorldTransformAction(WorldTransformCreationData creationData) {
 		creationData.d = Math.max(creationData.d, 1);
 		creationData.h = Math.max(creationData.h, 1);
 		creationData.w = Math.max(creationData.w, 1);
@@ -31,7 +31,7 @@ public class WorldTransformAction {
 	/*
 	 * Get current blockstates in world at position
 	 * */
-	public static BlockState[][][] getCurrentStructure(TransformCreationData creationData) {
+	public static BlockState[][][] getCurrentStructure(WorldTransformCreationData creationData) {
 		
 		BlockState[][][] ret = new BlockState[creationData.w][creationData.h][creationData.d];
 		

@@ -1,6 +1,11 @@
 package ImageMod.commands;
 
+import ImageMod.ImageBuilder.BlockImageBuilder;
+import ImageMod.ImageBuilder.BlockImageCreationData;
+import ImageMod.ImageBuilder.ImageBlock;
+import ImageMod.ImageBuilder.ResizeableImage;
 import ImageMod.util.*;
+import WorldTransformer.WorldTransformAction;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
