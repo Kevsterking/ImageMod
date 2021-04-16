@@ -2,7 +2,7 @@ package ImageMod.ImageBuilder;
 
 import java.util.ArrayList;
 
-import WorldTransformer.WorldTransformAction;
+import ImageMod.WorldTransformer.WorldTransformAction;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 

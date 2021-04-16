@@ -2,7 +2,7 @@ package ImageMod.ImageBuilder;
 
 import java.util.function.Consumer;
 
-import WorldTransformer.WorldTransformAction;
+import ImageMod.WorldTransformer.WorldTransformAction;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.server.ServerWorld;

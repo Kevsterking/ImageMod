@@ -2,9 +2,9 @@ package ImageMod.ImageBuilder;
 
 import java.util.ArrayList;
 
+import ImageMod.WorldTransformer.WorldTransformAction;
+import ImageMod.WorldTransformer.WorldTransformCreationData;
 import ImageMod.commands.ImageCommand;
-import WorldTransformer.WorldTransformAction;
-import WorldTransformer.WorldTransformCreationData;
 
 public class BlockImageBuilder extends Thread {
 
