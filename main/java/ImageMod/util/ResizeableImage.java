@@ -70,10 +70,11 @@ public class ResizeableImage {
 
         for (int i = 0; i < img.buffer.length; i+=4) {
             double colorFactor = (double) Math.min(img.buffer[i], this.buffer[i]) / 255;
-            int dalpha = Math.abs(img.buffer[i] - this.buffer[i]) * 3;
+            int dalpha = Math.abs(img.buffer[i]   - this.buffer[i]) * 3;
             int db     = Math.abs(img.buffer[i+1] - this.buffer[i+1]);
             int dg     = Math.abs(img.buffer[i+2] - this.buffer[i+2]);
             int dr     = Math.abs(img.buffer[i+3] - this.buffer[i+3]);
+             
             ret += (1.0 - colorFactor) * dalpha + colorFactor * (db + dg + dr);
         }
 

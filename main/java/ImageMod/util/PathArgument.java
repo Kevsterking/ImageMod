@@ -10,6 +10,8 @@ import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 
+import net.minecraft.command.CommandSource;
+
 import java.io.FileNotFoundException;
 import java.nio.file.NotDirectoryException;
 import java.nio.file.Path;
@@ -98,7 +100,7 @@ public class PathArgument implements ArgumentType<Path> {
         return ret;
     }
 
-    public static Path getPath(final CommandContext<?> context, final String name) {
+    public static Path getPath(final CommandContext<CommandSource> context, final String name) {
         return context.getArgument(name, Path.class);
     }
 

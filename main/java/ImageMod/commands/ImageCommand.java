@@ -1,11 +1,7 @@
 package ImageMod.commands;
 
-import ImageMod.util.DirectoryArgument;
-import ImageMod.util.ImageBlock;
-import ImageMod.util.ImageCreationData;
-import ImageMod.util.ImageCreationThread;
-import ImageMod.util.PathArgument;
-import ImageMod.util.ResizeableImage;
+import ImageMod.util.*;
+
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
@@ -26,6 +22,7 @@ import net.minecraft.util.Direction;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.shapes.VoxelShape;
+import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.world.Blockreader;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -50,13 +47,16 @@ public class ImageCommand {
     private static final Logger LOGGER = LogManager.getLogger();
     private static final PathArgument imageSourceArgument = new PathArgument();
 
+    public static Stack<WorldTransformAction> undoStack = new Stack<>();
+    public static Stack<WorldTransformAction> redoStack = new Stack<>();
+
     /*====================================================*/
     /*==================public methods====================*/
     /*====================================================*/
 
     /*
-    * Setup class
-    * */
+     * Setup class
+     * */
     public static void setup() {
         try {
             ImageCommand.setRootDirectory(System.getProperty("user.home") + "/Downloads");
@@ -64,8 +64,8 @@ public class ImageCommand {
     }
 
     /*
-    * Register this command to Minecraft
-    * */
+     * Register this command to Minecraft
+     * */
     public static void register(CommandDispatcher<CommandSource> dispatcher) {
 
         ImageCommand.setup();
@@ -99,20 +99,26 @@ public class ImageCommand {
 
         createLiteral.then(srcArgument);//.then(srcArgumentFinal);
 
+        /* Undo */
+        LiteralArgumentBuilder<CommandSource> undoLiteral = Commands.literal("undo").executes(ImageCommand::undoCommand);
+
+        /* Redo */
+        LiteralArgumentBuilder<CommandSource> redoLiteral = Commands.literal("redo").executes(ImageCommand::redoCommand);
+        
         /* SetDirectory */
         LiteralArgumentBuilder<CommandSource> setDirectoryLiteral = Commands.literal("setDirectory");
         RequiredArgumentBuilder<CommandSource, Path> directoryArgument  = Commands.argument("dir", new DirectoryArgument()).executes(ImageCommand::setDirectoryCommand);
 
         setDirectoryLiteral.then(directoryArgument);
 
-        root.then(createLiteral).then(setDirectoryLiteral).then(reload);
+        root.then(createLiteral).then(setDirectoryLiteral).then(reload).then(undoLiteral).then(redoLiteral);
 
         dispatcher.register(root);
     }
 
     /*
-    * Set the root directory for images on local machine
-    * */
+     * Set the root directory for images on local machine
+     * */
     public static void setRootDirectory(Path path) throws NotDirectoryException, FileNotFoundException {
         imageSourceArgument.setRootDirectory(path);
     }
@@ -121,17 +127,18 @@ public class ImageCommand {
     }
 
     /*
-    * Reload assets
-    * */
+     * Reload assets
+     * */
     public static void reload() {
         ImageCommand.updateBlockList();
         LOGGER.info("Reload complete.");
     }
 
+    
     /*
-    * Update our locally stored block list
-    * Filter out bad block types and assign
-    * */
+     * Update our locally stored block list
+     * Filter out bad block types and assign
+     * */
     public static void updateBlockList() {
         ImageCommand.blockList = ImageCommand.filterBlocks(ForgeRegistries.BLOCKS.getValues());
         LOGGER.info("Block list update complete.");
@@ -142,13 +149,13 @@ public class ImageCommand {
     /*====================================================*/
 
     /*
-    * code that gets ran once the command /image create <src> etc. is called.
-    * */
+     * code that gets ran once the command /image create <src> etc. is called.
+     * */
     private static int createImageCommand(CommandContext<CommandSource> ctx) throws CommandSyntaxException {
 
         /*
-        * Load source image
-        * */
+         * Load source image
+         * */
         ResizeableImage image = null;
         int w = 0, h = 0;
         boolean wset = false, hset = false;
@@ -178,17 +185,96 @@ public class ImageCommand {
             h = (w * image.height) / image.width;
         }
 
-        ImageCommand.createImage(ctx.getSource(), image, w, h);
-        LOGGER.info("Generated image successfully");
+
+        /*
+         * world in which the command was sent
+         * */
+        CommandSource source 	= ctx.getSource();
+    	Entity		entity  	= source.getEntity();
+        ServerWorld world   	= source.getLevel();
+
+        /*
+         * Get relative directions and positions
+         * to entity for placing image blocks at the
+         * right place
+         * */
+        Direction viewDir    = entity.getDirection();
+        Direction rightDir   = viewDir.getClockWise();
+        BlockPos  startPos   = entity.blockPosition().relative(viewDir, 2);
+
+        /*
+         * Feels like dumb solution but it works
+         * */
+        final int ww = w;
+        final int hh = h;
+
+        /*
+         * Set creation data needed for creation of an image
+         * */
+        BlockImageCreationData creationData = new BlockImageCreationData();
+        creationData.image       = image;
+        creationData.world       = world;
+        creationData.pos         = startPos;
+        creationData.xDir        = rightDir;
+        creationData.yDir        = Direction.UP;
+        creationData.zDir		 = viewDir;
+        creationData.blockWidth  = w;
+        creationData.blockHeight = h;
+        creationData.onError = (e) -> {
+        	source.sendFailure(new StringTextComponent(e.getMessage()));
+        };
+        creationData.onSuccess = (transform) -> {
+        	source.sendSuccess(new StringTextComponent(String.format("Successfully created (%dx%d) image", ww, hh)), true);
+        	transform.performAction();
+        	ImageCommand.undoStack.push(transform);
+        };
+        
+        
+        /*
+         * Create image 
+         * */
+        ImageCommand.createImage(creationData);
+        
         return 1;
     }
 
-    // TODO: implement
     /*
+    * Undo last world transform
+    * */
     private static int undoCommand(CommandContext<CommandSource> ctx) {
-        return -1;
+        
+    	if (ImageCommand.undoStack.empty()) {
+    		ctx.getSource().sendFailure(new StringTextComponent("Undo stack is empty"));
+    		return -1;
+    	}
+    	
+    	WorldTransformAction action = ImageCommand.undoStack.pop();;
+        action.revertAction();
+        ImageCommand.redoStack.push(action);
+        
+        ctx.getSource().sendSuccess(new StringTextComponent("Successfully reverted last image creation"), true);
+        
+        return 1;
     }
-	*/
+
+    /*
+    * Redo last undo
+    * */
+    private static int redoCommand(CommandContext<CommandSource> ctx) {
+        
+    	if (ImageCommand.redoStack.empty()) {
+    		ctx.getSource().sendFailure(new StringTextComponent("Redo stack is empty"));
+    		return -1;
+    	}
+    	
+    	WorldTransformAction action = ImageCommand.redoStack.pop();
+        action.performAction();
+        ImageCommand.undoStack.push(action);
+        
+        ctx.getSource().sendSuccess(new StringTextComponent("Successfully recreated image"), true);
+        
+        return 1;
+    }
 
     /*
     * Set the root directory for where to look for images
@@ -199,8 +285,13 @@ public class ImageCommand {
 
         try {
             ImageCommand.imageSourceArgument.setRootDirectory(dir);
+            ctx.getSource().sendSuccess(new StringTextComponent("Successfully set image directory to \"" + dir.toString() + "\""), true);
             return 1;
-        } catch (Exception e) {}
+        } catch (NotDirectoryException e) {
+        	ctx.getSource().sendFailure(new StringTextComponent("Provided path is not a directory"));
+        } catch (FileNotFoundException e) {
+        	ctx.getSource().sendFailure(new StringTextComponent("Provided path could not be found"));
+        }
 
         return -1;
     }
@@ -216,38 +307,10 @@ public class ImageCommand {
     /*
     * Create the image as an in game block pixel-art
     * */
-    private static void createImage(CommandSource source, ResizeableImage image, final int w, final int h) {
-
-        /*
-        * Entity that sent command &
-        * world in which the command was sent
-        * */
-        Entity      invoker = source.getEntity();
-        ServerWorld world   = source.getLevel();
-
-        /*
-        * Get relative directions and positions
-        * to entity for placing image blocks at the
-        * right place
-        * */
-        Direction viewDir    = invoker.getDirection();
-        Direction rightDir   = viewDir.getClockWise();
-        BlockPos  invokerPos = invoker.blockPosition();
-        BlockPos  startPos   = invokerPos.relative(viewDir, 2);
-
-        ImageCreationData creationData = new ImageCreationData();
-        creationData.image       = image;
-        creationData.invoker     = invoker;
-        creationData.world       = world;
-        creationData.pos         = startPos;
-        creationData.xDir        = rightDir;
-        creationData.yDir        = Direction.UP;
-        creationData.blockWidth  = w;
-        creationData.blockHeight = h;
-
-        new ImageCreationThread(creationData).start();
+    private static void createImage(BlockImageCreationData creationData) {
+        new BlockImageBuilder(creationData);
     }
-
+    
     /*
     * Filter out unwanted blockStates.
     * ex. non full square blocks

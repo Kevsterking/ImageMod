@@ -1,16 +1,19 @@
 package ImageMod.util;
 
-import net.minecraft.entity.Entity;
+import java.util.function.Consumer;
+
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.server.ServerWorld;
 
 /* classes */
-public class ImageCreationData {
+public class BlockImageCreationData {
     public ResizeableImage  image;
-    public Entity           invoker;
     public ServerWorld      world;
     public BlockPos         pos;
-    public Direction        xDir, yDir;
+    public Direction        xDir, yDir, zDir;
     public int              blockWidth, blockHeight;
+    
+    public Consumer<Exception> 			  onError;
+    public Consumer<WorldTransformAction> onSuccess;
 }

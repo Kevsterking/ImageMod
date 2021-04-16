@@ -5,17 +5,17 @@ import java.util.ArrayList;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 
-public class ImageCreationWorker extends Thread {
+public class BlockImageCreationWorker extends Thread {
 
 	/* Vars */
 	private WorldTransformAction 	transform;
-    private ImageCreationData 		creationData;
+    private BlockImageCreationData 		creationData;
     private ArrayList<ImageBlock> 	preSized;
     private final int 				tileWidth, tileHeight;
 
     private int xMin, xMax, yMin, yMax;
     
-    public ImageCreationWorker(WorldTransformAction transform, ImageCreationData creationData, ArrayList<ImageBlock> preSized, final int tileWidth, final int tileHeight) {
+    public BlockImageCreationWorker(WorldTransformAction transform, BlockImageCreationData creationData, ArrayList<ImageBlock> preSized, final int tileWidth, final int tileHeight) {
         this.transform  	= transform;
     	this.creationData 	= creationData;
         this.preSized   	= preSized;

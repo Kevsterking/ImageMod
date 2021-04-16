@@ -38,10 +38,10 @@ public class WorldTransformAction {
 		for (int x = 0; x < creationData.w; x++) {
 			for (int y = 0; y < creationData.h; y++) {
 				for (int z = 0; z < creationData.d; z++) {
-					BlockPos pos = creationData.origin
-							.relative(creationData.x, x)
-							.relative(creationData.y, y)
-							.relative(creationData.z, z);
+					BlockPos pos = creationData.pos
+							.relative(creationData.xDir, x)
+							.relative(creationData.yDir, y)
+							.relative(creationData.zDir, z);
 					ret[x][y][z] = creationData.world.getBlockState(pos);
 				}
 			}
@@ -83,12 +83,14 @@ public class WorldTransformAction {
 			for (int y = 0; y < this.creationData.h; y++) {
 				for (int z = 0; z < this.creationData.d; z++) {
 		
-					BlockPos pos = this.creationData.origin
-							.relative(this.creationData.x, x)
-							.relative(this.creationData.y, y)
-							.relative(this.creationData.z, z);
+					BlockPos pos = this.creationData.pos
+							.relative(this.creationData.xDir, x)
+							.relative(this.creationData.yDir, y)
+							.relative(this.creationData.zDir, z);
 					
 					BlockState state = structure[x][y][z];
+					
+					
 					
 					this.creationData.world.setBlockAndUpdate(pos, state);
 				}
