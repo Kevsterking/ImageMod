@@ -19,7 +19,7 @@ modId="imagemod" #mandatory
 # The version number of the mod - there's a few well known ${} variables useable here or just hardcode it
 #version="${file.jarVersion}" #will substitute the value of the Implementation-Version as read from the mod's JAR file metadata
 # see the associated build.gradle script for how to populate this completely automatically during a build
-version="1.4.4" #mandatory
+version="1.4.5" #mandatory
 # A display name for the mod
 displayName="Image Mod" #mandatory
 # A URL to query for updates for this mod. See the JSON update specification https://mcforge.readthedocs.io/en/latest/gettingstarted/autoupdate/
@@ -34,7 +34,7 @@ credits="Shout out to my last braincell for working so relentlessly" #optional
 authors="Kevin Bäckstäde" #optional
 # The description text for the mod (multi line!) (#mandatory)
 description='''
-A simple mod to allow for quick creation of in-game pixel-art from on system images files.
+A simple mod to allow for quick creation of in-game pixel-art from on system image files.
 '''
 # A dependency - use the . to indicate dependency for a specific modid. Dependencies are optional.
 [[dependencies.imagemod]] #optional
@@ -53,6 +53,6 @@ A simple mod to allow for quick creation of in-game pixel-art from on system ima
     modId="minecraft"
     mandatory=true
 # This version range declares a minimum of the current minecraft version up to but not including the next major version
-    versionRange="[1.16,1.17)"
+    versionRange="[1.17,1.18)"
     ordering="NONE"
     side="BOTH"

@@ -4,36 +4,37 @@ import ImageMod.ImageBuilder.BlockImageBuilder;
 import ImageMod.ImageBuilder.BlockImageCreationData;
 import ImageMod.ImageBuilder.ImageBlock;
 import ImageMod.ImageBuilder.ResizeableImage;
+import ImageMod.ImageMod;
 import ImageMod.WorldTransformer.WorldTransformAction;
 import ImageMod.util.*;
-
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.CoralBlock;
-import net.minecraft.block.LeavesBlock;
-import net.minecraft.block.material.Material;
 import net.minecraft.client.Minecraft;
-import net.minecraft.command.CommandSource;
-import net.minecraft.command.Commands;
-import net.minecraft.entity.Entity;
-import net.minecraft.resources.IResourceManager;
-import net.minecraft.util.Direction;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.shapes.VoxelShape;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.world.Blockreader;
-import net.minecraft.world.server.ServerWorld;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.EmptyBlockGetter;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.CoralBlock;
+import net.minecraft.world.level.block.LeavesBlock;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.chunk.EmptyLevelChunk;
+import net.minecraft.world.level.material.Material;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.*;
@@ -71,30 +72,30 @@ public class ImageCommand {
     /*
      * Register this command to Minecraft
      * */
-    public static void register(CommandDispatcher<CommandSource> dispatcher) {
+    public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
 
         ImageCommand.setup();
 
         /* image */
-        LiteralArgumentBuilder<CommandSource> root = Commands.literal("image");
+        LiteralArgumentBuilder<CommandSourceStack> root = Commands.literal("image");
 
         /* Create */
-        LiteralArgumentBuilder<CommandSource> createLiteral = Commands.literal("create").requires((source) -> { return source.hasPermission(2); });
+        LiteralArgumentBuilder<CommandSourceStack> createLiteral = Commands.literal("create").requires((source) -> { return source.hasPermission(2); });
 
-        LiteralArgumentBuilder<CommandSource> wLiteral  	= Commands.literal("-width");
-        LiteralArgumentBuilder<CommandSource> hLiteral  	= Commands.literal("-height");
-        LiteralArgumentBuilder<CommandSource> whInfoLiteral = Commands.literal("~ ~");
+        LiteralArgumentBuilder<CommandSourceStack> wLiteral  	= Commands.literal("-width");
+        LiteralArgumentBuilder<CommandSourceStack> hLiteral  	= Commands.literal("-height");
+        LiteralArgumentBuilder<CommandSourceStack> whInfoLiteral = Commands.literal("~ ~");
         
-        RequiredArgumentBuilder<CommandSource, Path> srcArgument        = Commands.argument("src", imageSourceArgument);
+        RequiredArgumentBuilder<CommandSourceStack, Path> srcArgument        = Commands.argument("src", imageSourceArgument);
         //RequiredArgumentBuilder<CommandSource, Path> srcArgumentFinal   = Commands.argument("src", imageSourceArgument).executes(ImageCommand::createImageCommand);
 
-        RequiredArgumentBuilder<CommandSource, Integer> wArgument      = Commands.argument("width", IntegerArgumentType.integer());
-        RequiredArgumentBuilder<CommandSource, Integer> wArgumentFinal = Commands.argument("width", IntegerArgumentType.integer()).executes(ImageCommand::createImageCommand);
+        RequiredArgumentBuilder<CommandSourceStack, Integer> wArgument      = Commands.argument("width", IntegerArgumentType.integer());
+        RequiredArgumentBuilder<CommandSourceStack, Integer> wArgumentFinal = Commands.argument("width", IntegerArgumentType.integer()).executes(ImageCommand::createImageCommand);
 
         //RequiredArgumentBuilder heightArgument      = Commands.argument("height", IntegerArgumentType.integer());
-        RequiredArgumentBuilder<CommandSource, Integer> hArgumentFinal = Commands.argument("height", IntegerArgumentType.integer()).executes(ImageCommand::createImageCommand);
+        RequiredArgumentBuilder<CommandSourceStack, Integer> hArgumentFinal = Commands.argument("height", IntegerArgumentType.integer()).executes(ImageCommand::createImageCommand);
 
-        LiteralArgumentBuilder<CommandSource> reload = Commands.literal("reload").executes(ImageCommand::reloadCommand);
+        LiteralArgumentBuilder<CommandSourceStack> reload = Commands.literal("reload").executes(ImageCommand::reloadCommand);
         
         wLiteral.then(wArgumentFinal);
         hLiteral.then(hArgumentFinal);
@@ -105,14 +106,14 @@ public class ImageCommand {
         createLiteral.then(srcArgument);//.then(srcArgumentFinal);
 
         /* Undo */
-        LiteralArgumentBuilder<CommandSource> undoLiteral = Commands.literal("undo").executes(ImageCommand::undoCommand);
+        LiteralArgumentBuilder<CommandSourceStack> undoLiteral = Commands.literal("undo").executes(ImageCommand::undoCommand);
 
         /* Redo */
-        LiteralArgumentBuilder<CommandSource> redoLiteral = Commands.literal("redo").executes(ImageCommand::redoCommand);
+        LiteralArgumentBuilder<CommandSourceStack> redoLiteral = Commands.literal("redo").executes(ImageCommand::redoCommand);
         
         /* SetDirectory */
-        LiteralArgumentBuilder<CommandSource> setDirectoryLiteral = Commands.literal("setDirectory");
-        RequiredArgumentBuilder<CommandSource, Path> directoryArgument  = Commands.argument("dir", new DirectoryArgument()).executes(ImageCommand::setDirectoryCommand);
+        LiteralArgumentBuilder<CommandSourceStack> setDirectoryLiteral = Commands.literal("setDirectory");
+        RequiredArgumentBuilder<CommandSourceStack, Path> directoryArgument  = Commands.argument("dir", new DirectoryArgument()).executes(ImageCommand::setDirectoryCommand);
 
         setDirectoryLiteral.then(directoryArgument);
 
@@ -156,7 +157,7 @@ public class ImageCommand {
     /*
      * code that gets ran once the command /image create <src> etc. is called.
      * */
-    private static int createImageCommand(CommandContext<CommandSource> ctx) throws CommandSyntaxException {
+    private static int createImageCommand(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
 
         /*
          * Load source image
@@ -194,18 +195,18 @@ public class ImageCommand {
         /*
          * world in which the command was sent
          * */
-        CommandSource source 	= ctx.getSource();
-    	Entity		entity  	= source.getEntity();
-        ServerWorld world   	= source.getLevel();
+        CommandSourceStack source 	= ctx.getSource();
+        Entity entity  	            = source.getEntity();
+        ServerLevel world   	    = source.getLevel();
 
         /*
          * Get relative directions and positions
          * to entity for placing image blocks at the
          * right place
          * */
-        Direction viewDir    = entity.getDirection();
-        Direction rightDir   = viewDir.getClockWise();
-        BlockPos  startPos   = entity.blockPosition().relative(viewDir, 2);
+        Direction viewDir       = entity.getDirection();
+        Direction rightDir      = viewDir.getClockWise();
+        BlockPos startPos       = entity.blockPosition().relative(viewDir, 2);
 
         /*
          * Feels like dumb solution but it works
@@ -226,15 +227,14 @@ public class ImageCommand {
         creationData.blockWidth  = w;
         creationData.blockHeight = h;
         creationData.onError = (e) -> {
-        	source.sendFailure(new StringTextComponent(e.getMessage()));
+        	source.sendFailure(new TextComponent(e.getMessage()));
         };
         creationData.onSuccess = (transform) -> {
-        	source.sendSuccess(new StringTextComponent(String.format("Successfully created (%dx%d) image", ww, hh)), true);
+        	source.sendSuccess(new TextComponent(String.format("Successfully created (%dx%d) image", ww, hh)), true);
         	transform.performAction();
         	ImageCommand.undoStack.push(transform);
         };
-        
-        
+
         /*
          * Create image 
          * */
@@ -246,10 +246,10 @@ public class ImageCommand {
     /*
     * Undo last world transform
     * */
-    private static int undoCommand(CommandContext<CommandSource> ctx) {
+    private static int undoCommand(CommandContext<CommandSourceStack> ctx) {
         
     	if (ImageCommand.undoStack.empty()) {
-    		ctx.getSource().sendFailure(new StringTextComponent("Undo stack is empty"));
+    		ctx.getSource().sendFailure(new TextComponent("Undo stack is empty"));
     		return -1;
     	}
     	
@@ -257,7 +257,7 @@ public class ImageCommand {
         action.revertAction();
         ImageCommand.redoStack.push(action);
         
-        ctx.getSource().sendSuccess(new StringTextComponent("Successfully reverted last image creation"), true);
+        ctx.getSource().sendSuccess(new TextComponent("Successfully reverted last image creation"), true);
         
         return 1;
     }
@@ -265,10 +265,10 @@ public class ImageCommand {
     /*
     * Redo last undo
     * */
-    private static int redoCommand(CommandContext<CommandSource> ctx) {
+    private static int redoCommand(CommandContext<CommandSourceStack> ctx) {
         
     	if (ImageCommand.redoStack.empty()) {
-    		ctx.getSource().sendFailure(new StringTextComponent("Redo stack is empty"));
+    		ctx.getSource().sendFailure(new TextComponent("Redo stack is empty"));
     		return -1;
     	}
     	
@@ -276,7 +276,7 @@ public class ImageCommand {
         action.performAction();
         ImageCommand.undoStack.push(action);
         
-        ctx.getSource().sendSuccess(new StringTextComponent("Successfully recreated image"), true);
+        ctx.getSource().sendSuccess(new TextComponent("Successfully recreated image"), true);
         
         return 1;
     }
@@ -284,18 +284,18 @@ public class ImageCommand {
     /*
     * Set the root directory for where to look for images
     * */
-    private static int setDirectoryCommand(CommandContext<CommandSource> ctx) throws CommandSyntaxException {
+    private static int setDirectoryCommand(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
 
         Path dir = DirectoryArgument.getPath(ctx, "dir");
 
         try {
             ImageCommand.imageSourceArgument.setRootDirectory(dir);
-            ctx.getSource().sendSuccess(new StringTextComponent("Successfully set image directory to \"" + dir.toString() + "\""), true);
+            ctx.getSource().sendSuccess(new TextComponent("Successfully set image directory to \"" + dir.toString() + "\""), true);
             return 1;
         } catch (NotDirectoryException e) {
-        	ctx.getSource().sendFailure(new StringTextComponent("Provided path is not a directory"));
+        	ctx.getSource().sendFailure(new TextComponent("Provided path is not a directory"));
         } catch (FileNotFoundException e) {
-        	ctx.getSource().sendFailure(new StringTextComponent("Provided path could not be found"));
+        	ctx.getSource().sendFailure(new TextComponent("Provided path could not be found"));
         }
 
         return -1;
@@ -304,7 +304,7 @@ public class ImageCommand {
     /*
      * Reload command variables
      * */
-    private static int reloadCommand(CommandContext<CommandSource> ctx) {
+    private static int reloadCommand(CommandContext<CommandSourceStack> ctx) {
     	ImageCommand.reload();
     	return 1;
     }
@@ -324,10 +324,8 @@ public class ImageCommand {
 
         ArrayList<ImageBlock> ret = new ArrayList<>();
 
-        Minecraft minecraft = Minecraft.getInstance();
-        IResourceManager manager = minecraft.getResourceManager();
-
-        Blockreader blocKReader = new Blockreader(null);
+        ResourceManager manager = ImageMod.getResourceManger();
+        BlockGetter blocKReader = EmptyBlockGetter.INSTANCE;
 
         for (Block block : blocks) {
 
@@ -346,11 +344,11 @@ public class ImageCommand {
             	applicable = false;
             }
             
-            if (block.hasTileEntity(state)) {
+            if (block.hasDynamicShape()) {
             	applicable = false;
             }
             
-            if (block.getLightValue(state, blocKReader, BlockPos.ZERO) > 0) {
+            if (block.getLightEmission(state, blocKReader, BlockPos.ZERO) > 0) {
             	applicable = false;
             }
             

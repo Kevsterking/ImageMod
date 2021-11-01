@@ -1,7 +1,7 @@
 package ImageMod.WorldTransformer;
 
-import net.minecraft.block.BlockState;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.block.state.BlockState;
 
 public class WorldTransformAction {
 
@@ -38,6 +38,7 @@ public class WorldTransformAction {
 		for (int x = 0; x < creationData.w; x++) {
 			for (int y = 0; y < creationData.h; y++) {
 				for (int z = 0; z < creationData.d; z++) {
+
 					BlockPos pos = creationData.pos
 							.relative(creationData.xDir, x)
 							.relative(creationData.yDir, y)
