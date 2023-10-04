@@ -3,11 +3,9 @@ package ImageMod;
 import ImageMod.commands.ImageCommand;
 import ImageMod.util.DirectoryArgument;
 import ImageMod.util.PathArgument;
-import net.minecraft.client.Minecraft;
 import net.minecraft.commands.synchronization.ArgumentTypeInfo;
 import net.minecraft.commands.synchronization.ArgumentTypeInfos;
 import net.minecraft.commands.synchronization.SingletonArgumentInfo;
-import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.MinecraftForge;
@@ -23,47 +21,39 @@ import net.minecraftforge.registries.RegistryObject;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-@Mod(ImageMod.modid)
+@Mod(ImageMod.MOD_ID)
 public class ImageMod {
 
-    public static final String modid = "imagemod";
+    public static final String MOD_ID = "imagemod";
     private static final Logger LOGGER = LogManager.getLogger();
 
+    private static final DeferredRegister<ArgumentTypeInfo<?, ?>> ARGUMENT_TYPES = DeferredRegister.create(ForgeRegistries.COMMAND_ARGUMENT_TYPES, MOD_ID);
 
-    private static final DeferredRegister<ArgumentTypeInfo<?, ?>> ARGUMENT_TYPES = DeferredRegister.create(ForgeRegistries.COMMAND_ARGUMENT_TYPES, ImageMod.modid);
-
-    private static final RegistryObject<SingletonArgumentInfo<PathArgument>> PATH_ARGUMENT = ARGUMENT_TYPES.register(
+    public static final RegistryObject<SingletonArgumentInfo<PathArgument>> PATH_ARGUMENT = ARGUMENT_TYPES.register(
             "pathargument",
             () -> ArgumentTypeInfos.registerByClass(PathArgument.class, SingletonArgumentInfo.contextFree(PathArgument::new))
     );
 
-    private static final RegistryObject<SingletonArgumentInfo<DirectoryArgument>> DIRECTORY_ARGUMENT = ARGUMENT_TYPES.register(
+    public static final RegistryObject<SingletonArgumentInfo<DirectoryArgument>> DIRECTORY_ARGUMENT = ARGUMENT_TYPES.register(
             "directoryargument",
             () -> ArgumentTypeInfos.registerByClass(DirectoryArgument.class, SingletonArgumentInfo.contextFree(DirectoryArgument::new))
     );
 
     @OnlyIn(Dist.CLIENT)
-    private static ResourceManager resourceManger;
+    private static ResourceManager resourceManager;
 
     public ImageMod() {
-
-        boolean clientSide = true;
+        IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();
+        bus.addListener(this::setup);
+        bus.addListener(this::clientSetup);
+        bus.addListener(this::loadComplete);
+        MinecraftForge.EVENT_BUS.register(ImageModEventHandler.class);
+        ARGUMENT_TYPES.register(bus);
 
         try {
-    		resourceManger = Minecraft.getInstance().getResourceManager();
-    	} catch(Exception e) {
-    		clientSide = false;
-    	}
-    	
-    	IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();
-        
-    	if (clientSide) {
-    	    bus.addListener(this::setup);
-            bus.addListener(this::clientSetup);
-            bus.addListener(this::loadComplete);
-            MinecraftForge.EVENT_BUS.register(ImageModEventHandler.class);
-            ARGUMENT_TYPES.register(bus);
-        } else {
+            resourceManager = Minecraft.getInstance().getResourceManager();
+        } catch(Exception e) {
+            // Handle exception
         }
     }
 
@@ -71,8 +61,8 @@ public class ImageMod {
      * Get mod resource manager
      * */
     @OnlyIn(Dist.CLIENT)
-    public static ResourceManager getResourceManger() {
-        return ImageMod.resourceManger;
+    public static ResourceManager getResourceManager() {
+        return resourceManager;
     }
 
     /*
