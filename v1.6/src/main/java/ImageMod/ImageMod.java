@@ -1,11 +1,13 @@
 package ImageMod;
 
-import ImageMod.commands.ImageCommand;
+import ImageMod.command.ImageCommand;
 import ImageMod.util.DirectoryArgument;
 import ImageMod.util.PathArgument;
+import net.minecraft.client.Minecraft;
 import net.minecraft.commands.synchronization.ArgumentTypeInfo;
 import net.minecraft.commands.synchronization.ArgumentTypeInfos;
 import net.minecraft.commands.synchronization.SingletonArgumentInfo;
+import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.MinecraftForge;
@@ -57,24 +59,27 @@ public class ImageMod {
         }
     }
 
-    /*
+    /**
      * Get mod resource manager
-     * */
+     **/
+    
     @OnlyIn(Dist.CLIENT)
     public static ResourceManager getResourceManager() {
         return resourceManager;
     }
 
-    /*
+    /**
     * Setup the mod
-    * */
+    **/
+    
     private void setup(final FMLCommonSetupEvent event) {
         LOGGER.info("ImageMod is set up.");
     }
 
-    /*
+    /**
     * Client sided mod action
-    * */
+    **/
+    
     private void clientSetup(final FMLClientSetupEvent event) {
         LOGGER.info("ImageMod Client set up.");
     }
