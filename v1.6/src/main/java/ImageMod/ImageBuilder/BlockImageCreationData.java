@@ -9,7 +9,7 @@ import net.minecraft.server.level.ServerLevel;
 
 /* classes */
 public class BlockImageCreationData {
-    public ResizeableImage  image;
+    public ResizeableImage image;
     public ServerLevel world;
     public BlockPos pos;
     public Direction xDir;
@@ -17,6 +17,6 @@ public class BlockImageCreationData {
     public Direction zDir;
     public int blockWidth, blockHeight;
     
-    public Consumer<Exception> 			  onError;
+    public Consumer<Exception> onError;
     public Consumer<WorldTransformAction> onSuccess;
 }
