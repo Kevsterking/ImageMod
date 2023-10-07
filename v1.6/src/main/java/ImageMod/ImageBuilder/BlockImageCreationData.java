@@ -15,7 +15,7 @@ public class BlockImageCreationData {
     public Direction xDir;
     public Direction yDir;
     public Direction zDir;
-    public int              blockWidth, blockHeight;
+    public int blockWidth, blockHeight;
     
     public Consumer<Exception> 			  onError;
     public Consumer<WorldTransformAction> onSuccess;
