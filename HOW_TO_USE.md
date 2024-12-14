@@ -15,8 +15,8 @@ This mod has one main feature - **/image** command that lets you create images i
 
 /image create <*ImagePath*> <*width*> <*height*> - create image with a defined block width & height
 
-![Select an image to create](https://media.forgecdn.net/attachments/356/990/2021-04-17_22.png)
-![Choose the width and/or height in blocks](https://media.forgecdn.net/attachments/356/991/2021-04-17_22.png)
-![An example of a full command - "/image create 'mcr.jpg' -width 200"](https://media.forgecdn.net/attachments/356/992/2021-04-17_22.png)
-![Successful image creation prompt"](https://media.forgecdn.net/attachments/356/993/2021-04-17_22.png)
-![The views of the image created from a distance"](https://media.forgecdn.net/attachments/356/994/2021-04-17_22.png)
+![Select an image to create](res/cmd1.png)
+![Choose the width and/or height in blocks](res/cmd2.png)
+![An example of a full command - "/image create 'mcr.jpg' -width 200"](res/cmd3.png)
+![Successful image creation prompt"](res/cmd4.png)
+![The views of the image created from a distance"](res/result.png)
