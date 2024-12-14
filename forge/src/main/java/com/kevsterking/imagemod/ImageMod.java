@@ -2,12 +2,11 @@ package com.kevsterking.imagemod;
 
 import com.kevsterking.imagemod.commands.ImageCommand;
 import net.minecraft.client.Minecraft;
-import net.minecraft.server.packs.resources.ResourceManager;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraft.resources.IResourceManager;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.common.Mod;
+
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLLoadCompleteEvent;
@@ -19,37 +18,22 @@ import org.apache.logging.log4j.Logger;
 public class ImageMod {
 
     public static final String modid = "imagemod";
+
     private static final Logger LOGGER = LogManager.getLogger();
-    
-    @OnlyIn(Dist.CLIENT)
-    private static ResourceManager resourceManger;
+    private static IResourceManager resourceManger = Minecraft.getInstance().getResourceManager();
 
     public ImageMod() {
-    	
-    	boolean clientSide = true;
-    	
-    	try {
-    		resourceManger = Minecraft.getInstance().getResourceManager();
-    	} catch(Exception e) {
-    		clientSide = false;
-    	}
-    	
-    	IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();
-        
-    	if (clientSide) {
-    	    bus.addListener(this::setup);
-            bus.addListener(this::clientSetup);
-            bus.addListener(this::loadComplete);
-            MinecraftForge.EVENT_BUS.register(ImageModEventHandler.class);
-        } else {
-        }
+        IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();
+        bus.addListener(this::setup);
+        bus.addListener(this::clientSided);
+        bus.addListener(this::loadComplete);
+        MinecraftForge.EVENT_BUS.register(ImageModEventHandler.class);
     }
 
     /*
      * Get mod resource manager
      * */
-    @OnlyIn(Dist.CLIENT)
-    public static ResourceManager getResourceManger() {
+    public static IResourceManager getResourceManger() {
         return ImageMod.resourceManger;
     }
 
@@ -57,18 +41,22 @@ public class ImageMod {
     * Setup the mod
     * */
     private void setup(final FMLCommonSetupEvent event) {
-        LOGGER.info("ImageMod is set up.");
+        LOGGER.info("com.kevsterking.ImageMod is set up.");
     }
 
     /*
     * Client sided mod action
     * */
-    private void clientSetup(final FMLClientSetupEvent event) {
-        LOGGER.info("ImageMod Client set up.");
+    private void clientSided(final FMLClientSetupEvent event) {
+        LOGGER.info("Client side set up.");
     }
 
+    /*
+    * Load completed
+    * */
     private void loadComplete(final FMLLoadCompleteEvent event) {
         ImageCommand.reload();
         LOGGER.info("Load completed!");
     }
+
 }

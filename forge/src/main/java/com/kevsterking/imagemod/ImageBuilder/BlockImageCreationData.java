@@ -3,18 +3,16 @@ package com.kevsterking.imagemod.ImageBuilder;
 import java.util.function.Consumer;
 
 import com.kevsterking.imagemod.WorldTransformer.WorldTransformAction;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
-import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.Direction;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.server.ServerWorld;
 
 /* classes */
 public class BlockImageCreationData {
     public ResizeableImage  image;
-    public ServerLevel world;
-    public BlockPos pos;
-    public Direction xDir;
-    public Direction yDir;
-    public Direction zDir;
+    public ServerWorld      world;
+    public BlockPos         pos;
+    public Direction        xDir, yDir, zDir;
     public int              blockWidth, blockHeight;
     
     public Consumer<Exception> 			  onError;
