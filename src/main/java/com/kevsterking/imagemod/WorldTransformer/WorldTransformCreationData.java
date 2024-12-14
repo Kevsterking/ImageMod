@@ -1,4 +1,4 @@
-package ImageMod.WorldTransformer;
+package com.kevsterking.imagemod.WorldTransformer;
 
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;

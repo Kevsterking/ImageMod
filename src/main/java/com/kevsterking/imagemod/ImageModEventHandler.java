@@ -1,6 +1,6 @@
-package ImageMod;
+package com.kevsterking.imagemod;
 
-import ImageMod.commands.ImageCommand;
+import com.kevsterking.imagemod.commands.ImageCommand;
 import com.mojang.brigadier.CommandDispatcher;
 import net.minecraft.command.CommandSource;
 import net.minecraftforge.event.RegisterCommandsEvent;

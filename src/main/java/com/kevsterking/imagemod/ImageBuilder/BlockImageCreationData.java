@@ -1,8 +1,8 @@
-package ImageMod.ImageBuilder;
+package com.kevsterking.imagemod.ImageBuilder;
 
 import java.util.function.Consumer;
 
-import ImageMod.WorldTransformer.WorldTransformAction;
+import com.kevsterking.imagemod.WorldTransformer.WorldTransformAction;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.server.ServerWorld;

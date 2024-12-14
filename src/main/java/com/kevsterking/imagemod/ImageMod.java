@@ -1,6 +1,6 @@
-package ImageMod;
+package com.kevsterking.imagemod;
 
-import ImageMod.commands.ImageCommand;
+import com.kevsterking.imagemod.commands.ImageCommand;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.IResourceManager;
 import net.minecraftforge.common.MinecraftForge;
@@ -41,7 +41,7 @@ public class ImageMod {
     * Setup the mod
     * */
     private void setup(final FMLCommonSetupEvent event) {
-        LOGGER.info("ImageMod is set up.");
+        LOGGER.info("com.kevsterking.ImageMod is set up.");
     }
 
     /*

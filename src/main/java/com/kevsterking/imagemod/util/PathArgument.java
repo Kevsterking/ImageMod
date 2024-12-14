@@ -1,4 +1,4 @@
-package ImageMod.util;
+package com.kevsterking.imagemod.util;
 
 import com.mojang.brigadier.LiteralMessage;
 import com.mojang.brigadier.StringReader;

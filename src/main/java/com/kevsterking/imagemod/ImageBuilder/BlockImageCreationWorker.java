@@ -1,8 +1,8 @@
-package ImageMod.ImageBuilder;
+package com.kevsterking.imagemod.ImageBuilder;
 
 import java.util.ArrayList;
 
-import ImageMod.WorldTransformer.WorldTransformAction;
+import com.kevsterking.imagemod.WorldTransformer.WorldTransformAction;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 

@@ -1,4 +1,4 @@
-package ImageMod.ImageBuilder;
+package com.kevsterking.imagemod.ImageBuilder;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;

@@ -1,11 +1,11 @@
-package ImageMod.commands;
+package com.kevsterking.imagemod.commands;
 
-import ImageMod.ImageBuilder.BlockImageBuilder;
-import ImageMod.ImageBuilder.BlockImageCreationData;
-import ImageMod.ImageBuilder.ImageBlock;
-import ImageMod.ImageBuilder.ResizeableImage;
-import ImageMod.WorldTransformer.WorldTransformAction;
-import ImageMod.util.*;
+import com.kevsterking.imagemod.ImageBuilder.BlockImageBuilder;
+import com.kevsterking.imagemod.ImageBuilder.BlockImageCreationData;
+import com.kevsterking.imagemod.ImageBuilder.ImageBlock;
+import com.kevsterking.imagemod.ImageBuilder.ResizeableImage;
+import com.kevsterking.imagemod.WorldTransformer.WorldTransformAction;
+import com.kevsterking.imagemod.util.*;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;

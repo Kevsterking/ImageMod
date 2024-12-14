@@ -1,10 +1,10 @@
-package ImageMod.ImageBuilder;
+package com.kevsterking.imagemod.ImageBuilder;
 
 import java.util.ArrayList;
 
-import ImageMod.WorldTransformer.WorldTransformAction;
-import ImageMod.WorldTransformer.WorldTransformCreationData;
-import ImageMod.commands.ImageCommand;
+import com.kevsterking.imagemod.WorldTransformer.WorldTransformAction;
+import com.kevsterking.imagemod.WorldTransformer.WorldTransformCreationData;
+import com.kevsterking.imagemod.commands.ImageCommand;
 
 public class BlockImageBuilder extends Thread {
 
