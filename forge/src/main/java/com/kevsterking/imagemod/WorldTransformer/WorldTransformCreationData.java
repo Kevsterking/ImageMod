@@ -1,12 +1,12 @@
 package com.kevsterking.imagemod.WorldTransformer;
 
-import net.minecraft.util.Direction;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.server.ServerWorld;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerLevel;
 
 public class WorldTransformCreationData {
-	public ServerWorld 	world;
-	public BlockPos 	pos;
-	public Direction   	xDir, yDir, zDir;
+	public ServerLevel world;
+	public BlockPos pos;
+	public Direction xDir, yDir, zDir;
 	public int			w, h, d;
 }

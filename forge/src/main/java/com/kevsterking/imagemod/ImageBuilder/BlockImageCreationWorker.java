@@ -3,16 +3,16 @@ package com.kevsterking.imagemod.ImageBuilder;
 import java.util.ArrayList;
 
 import com.kevsterking.imagemod.WorldTransformer.WorldTransformAction;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
 
 public class BlockImageCreationWorker extends Thread {
 
 	/* Vars */
-	private WorldTransformAction 	transform;
+	private WorldTransformAction 	    transform;
     private BlockImageCreationData 		creationData;
-    private ArrayList<ImageBlock> 	preSized;
-    private final int 				tileWidth, tileHeight;
+    private ArrayList<ImageBlock> 	    preSized;
+    private final int 				    tileWidth, tileHeight;
 
     private int xMin, xMax, yMin, yMax;
     
