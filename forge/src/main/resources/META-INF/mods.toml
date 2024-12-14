@@ -1,12 +1,12 @@
 modLoader="javafml" #mandatory
-loaderVersion="[32,)" #mandatory This is typically bumped every Minecraft version by Forge. See our download page for lists of versions.
+loaderVersion="[37,)" #mandatory This is typically bumped every Minecraft version by Forge. See our download page for lists of versions.
 license="Free for all use" # Review your options at https://choosealicense.com/. All rights reserved is the default copyright stance, and is thus the default here.
 issueTrackerURL="https://github.com/Kevsterking/ImageMod/issues" #optional
 
 [[mods]] #mandatory
 modId="imagemod" #mandatory
 #version="${file.jarVersion}" #will substitute the value of the Implementation-Version as read from the mod's JAR file metadata
-version="1.4.4" #mandatory
+version="1.4.5" #mandatory
 displayName="Image Mod" #mandatory
 #updateJSONURL="https://change.me.example.invalid/updates.json" #optional
 #displayURL="https://change.me.to.your.mods.homepage.example.invalid/" #optional
@@ -16,15 +16,15 @@ authors="Kevin Bäckstäde" #optional
 description='''A simple mod to allow for quick creation of in-game pixel-art from on system images files.''' #mandatory
 
 [[dependencies.imagemod]] #optional
-    modId="forge" #mandatory
-    mandatory=true #mandatory
-    versionRange="[32,)" #mandatory
-    ordering="NONE"
-    side="BOTH"
+modId="forge" #mandatory
+mandatory=true #mandatory
+versionRange="[37,)" #mandatory
+ordering="NONE"
+side="BOTH"
 
 [[dependencies.imagemod]]
-    modId="minecraft"
-    mandatory=true
-    versionRange="[1.16,1.17)"
-    ordering="NONE"
-    side="BOTH"
+modId="minecraft"
+mandatory=true
+versionRange="[1.17,1.18)"
+ordering="NONE"
+side="BOTH"
