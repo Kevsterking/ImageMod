@@ -1,12 +1,12 @@
 ## How to use
 This mod has one main feature - **/image** command that lets you create images in your Minecraft world as a surface of blocks from files on your computer.
 
-![Options for the /image command](https://media.forgecdn.net/attachments/356/988/2021-04-17_22.png)
+![Options for the /image command](res/options.png)
 
 ### Setup
 /image setDirectory <*DirectoryPath*> - Set a directory for your images to avoid copying & pasting full paths all the time! (*Suggestion is to use your downloads folder*)
 
-![Options for the /image command](https://media.forgecdn.net/attachments/356/989/2021-04-17_22.png)
+![Options for the /image command](res/setup.png)
 
 ### Usage
 /image create <*ImagePath*> -width <*width*> - create image with a defined block width (height to scale)
