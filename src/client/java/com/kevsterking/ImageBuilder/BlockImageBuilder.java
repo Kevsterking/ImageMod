@@ -1,49 +1,38 @@
-package ImageMod.ImageBuilder;
+package com.kevsterking.ImageBuilder;
+
+import com.kevsterking.WorldTransformer.WorldTransformAction;
+import com.kevsterking.WorldTransformer.WorldTransformCreationData;
 
 import java.util.ArrayList;
 
-import ImageMod.WorldTransformer.WorldTransformAction;
-import ImageMod.WorldTransformer.WorldTransformCreationData;
-import ImageMod.commands.ImageCommand;
-
 public class BlockImageBuilder extends Thread {
 
-    /* Vars */
-    private BlockImageCreationData 	creationData;
-    private WorldTransformAction 	transform;
-    
-    public BlockImageBuilder(BlockImageCreationData creationData) {
-    	this.creationData 	= creationData;
+    private BlockImageCreationData creationData;
+    private WorldTransformAction transform;
+    private ArrayList<ImageBlock> image_blocks;
+
+    public BlockImageBuilder(BlockImageCreationData creationData, ArrayList<ImageBlock> image_blocks) {
+    	this.image_blocks = image_blocks;
+        this.creationData = creationData;
     	this.start();
     }
-    
-    /* Methods */
-    
-    /*
-     * Report back error
-     * */
-    @SuppressWarnings("unused")
-	private void reportError(Exception e) {
+
+    // Report back error
+    private void reportError(Exception e) {
     	if (this.creationData.onError != null) {
     		this.creationData.onError.accept(e);
     	}
     }
     
-    /*
-     * Report back success
-     * */
+    // Report back success
     private void reportSuccess(WorldTransformAction transform) {
     	this.creationData.onSuccess.accept(transform);
     }
     
-	/*
-	 * Thread run entry
-	 * */
+    // Thread run entry
     public void run() {
 		
-		/*
-		 * Setup data for world creation action 
-		 * */
+        // Setup data for world creation action
 		WorldTransformCreationData transformData = new WorldTransformCreationData();
         transformData.world 	= creationData.world;
         transformData.pos 		= creationData.pos;
@@ -54,29 +43,21 @@ public class BlockImageBuilder extends Thread {
         transformData.h			= creationData.blockHeight;
         transformData.d 		= 1;
         
-        /*
-         * Create world transform action
-         * */
+        // Create world transform action
         this.transform = new WorldTransformAction(transformData);
         
-        /*
-         * Image meta-data
-         * */
+        // Image meta-data
         final int tileWidth  = Math.max(this.creationData.image.width  / this.creationData.blockWidth, 1);
         final int tileHeight = Math.max(this.creationData.image.height / this.creationData.blockHeight, 1);
 
-        /*
-         * Pre-size block images to tileImage size for
-         * performance gain and to make it easy to
-         * compare later.
-         * */
+        // Pre-size block images to tileImage size for
+        // performance gain and to make it easy to
+        // compare later.
         ArrayList<ImageBlock> preSized = new ArrayList<>();
-        for (ImageBlock block : ImageCommand.blockList) {
+        for (ImageBlock block : this.image_blocks) {
             preSized.add(new ImageBlock(block.blockState, ResizeableImage.resize(block.image, tileWidth, tileHeight)));
         }
 
-        //int cores = Runtime.getRuntime().availableProcessors();
-        
         BlockImageCreationWorker[] workers = new BlockImageCreationWorker[this.creationData.blockHeight];
         for (int y = 0; y < this.creationData.blockHeight; y++) {
             workers[y] = new BlockImageCreationWorker(this.transform, this.creationData, preSized, tileWidth, tileHeight);

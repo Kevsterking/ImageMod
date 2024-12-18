@@ -1,4 +1,4 @@
-package ImageMod.util;
+package com.kevsterking.util;
 
 import com.mojang.brigadier.LiteralMessage;
 import com.mojang.brigadier.StringReader;
@@ -9,7 +9,8 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
-import net.minecraft.commands.CommandSourceStack;
+import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
+
 import java.io.FileNotFoundException;
 import java.nio.file.NotDirectoryException;
 import java.nio.file.Path;
@@ -20,7 +21,7 @@ import java.util.concurrent.CompletableFuture;
 
 public class PathArgument implements ArgumentType<Path> {
 
-    private static final Collection<String> EXAMPLES = Arrays.asList("\"" + System.getProperty("user.home") + "\"");
+    private static final Collection<String> EXAMPLES = Arrays.asList("\"" + System.getProperty("user.home") + "/Downloads\"");
     private static final SimpleCommandExceptionType PATH_NOT_FOUND = new SimpleCommandExceptionType(new LiteralMessage("Path not found"));
 
     public static Path rootDir;
@@ -127,7 +128,7 @@ public class PathArgument implements ArgumentType<Path> {
         return ret;
     }
 
-    public static Path getPath(final CommandContext<CommandSourceStack> context, final String name) {
+    public static Path getPath(final CommandContext<FabricClientCommandSource> context, final String name) {
         return context.getArgument(name, Path.class);
     }
 
