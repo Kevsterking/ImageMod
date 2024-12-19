@@ -45,9 +45,9 @@ public class ImageCommand {
 
     private static final PathArgument src_arg = new ImageFileArgument();
     private static final PathArgument dir_arg = new DirectoryArgument();
-    private static ArrayList<ImageBlock> image_blocks = new ArrayList<ImageBlock>();
-    private static Stack<WorldTransformAction> undo_stack = new Stack<>();
-    private static Stack<WorldTransformAction> redo_stack = new Stack<>();
+    private static final ArrayList<ImageBlock> image_blocks = new ArrayList<ImageBlock>();
+    private static final Stack<WorldTransformAction> undo_stack = new Stack<>();
+    private static final Stack<WorldTransformAction> redo_stack = new Stack<>();
 
     // Filter out unwanted blocks based on properties that
     // create unwanted visual differences
@@ -152,7 +152,7 @@ public class ImageCommand {
 
         // World in which the command was sent
         FabricClientCommandSource source = ctx.getSource();
-        Entity entity = source.getEntity();
+        Entity entity = source.getPlayer();
         ClientWorld world = source.getWorld();
 
         // Get relative directions and positions

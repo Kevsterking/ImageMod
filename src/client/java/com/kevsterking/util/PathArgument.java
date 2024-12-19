@@ -19,10 +19,14 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Stream;
 
 public class PathArgument implements ArgumentType<Path> {
 
-    private static final Collection<String> EXAMPLES = Arrays.asList("\"" + System.getProperty("user.home") + "/Downloads\"");
+    private static final Collection<String> EXAMPLES = Arrays.asList(
+        "\"" + System.getProperty("user.home") + "/Downloads\"",
+        "\"" + System.getProperty("user.home") + "/Desktop\""
+    );
     private static final SimpleCommandExceptionType PATH_NOT_FOUND = new SimpleCommandExceptionType(new LiteralMessage("Path not found"));
 
     public static Path root_directory = get_default_path();
@@ -46,7 +50,7 @@ public class PathArgument implements ArgumentType<Path> {
         return PathArgument.get_directory(Paths.get(str));
     }
 
-    // Get a path that fails with exception if does not exist
+    // Get a path that fails with exception if it does not exist
     public static Path get_path(Path path) throws FileNotFoundException {
         Path ret = PathArgument.root_directory != null ? PathArgument.root_directory.resolve(path) : path;
         if (ret.toFile().exists()) return ret;
@@ -89,6 +93,24 @@ public class PathArgument implements ArgumentType<Path> {
         return true;
     }
 
+    // Make sure string can be parsed as an argument string correctly
+    private static String argument_format(Path path) {
+        String path_str = PathArgument.get_formatted_path(path);
+        try {
+            if (
+                StringArgumentType
+                    .string()
+                    .parse(new StringReader(path_str))
+                    .compareTo(path_str) != 0
+            ) {
+                throw new Exception();
+            }
+            return path_str;
+        } catch (Exception e) {
+            return "\"" + path_str + "\"";
+        }
+    }
+
     @Override
     public <S> CompletableFuture<Suggestions> listSuggestions(
             CommandContext<S> context,
@@ -99,27 +121,14 @@ public class PathArgument implements ArgumentType<Path> {
         try {
             String parsed = StringArgumentType.string().parse(stringReader);
             int i = parsed.lastIndexOf("/") + 1;
-            String directory = parsed.substring(0, i);
             String query = parsed.substring(i);
-            Files.list(PathArgument.get_directory(directory))
-                .filter(
-                    path -> path.getFileName().toString().indexOf(query) == 0
-                )
-                .filter(this::filter_path)
-                .forEach(
-                    path -> {
-                        String path_str = PathArgument.get_formatted_path(path);
-                        try {
-                            if (StringArgumentType.string().parse(new StringReader(path_str)).compareTo(path_str) == 0) {
-                                builder.suggest(path_str);
-                            } else {
-                                builder.suggest("\"" + path_str + "\"");
-                            }
-                        } catch (Exception e) {
-                            builder.suggest("\"" + path_str + "\"");
-                        }
-                    }
-                );
+            Path directory = PathArgument.get_directory(parsed.substring(0, i));
+            try (Stream<Path> paths = Files.list(directory)) {
+                paths
+                    .filter(path -> path.getFileName().toString().indexOf(query) == 0)
+                    .filter(this::filter_path)
+                    .forEach(path -> builder.suggest(PathArgument.argument_format(path)));
+            }
         } catch (Exception ignored) {}
         return builder.buildFuture();
     }

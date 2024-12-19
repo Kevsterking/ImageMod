@@ -3,15 +3,15 @@
 	"id": "imagemod",
 	"version": "${version}",
 	"name": "imagemod",
-	"description": "This is an example description! Tell everyone what your mod is about!",
+	"description": "A simple mod for creation of pixel-art in Minecraft",
 	"authors": [
-		"Me!"
+		"Kevsterking"
 	],
 	"contact": {
 		"homepage": "https://fabricmc.net/",
 		"sources": "https://github.com/FabricMC/fabric-example-mod"
 	},
-	"license": "CC0-1.0",
+	"license": "Free For All Use",
 	"icon": "assets/imagemod/icon.png",
 	"environment": "*",
 	"entrypoints": {
