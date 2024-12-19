@@ -43,9 +43,7 @@ public class ResizeableImage {
     }
 
     public ResizeableImage subImage(final int x, final int y, final int w, final int h) {
-
         int[] ret = new int[w*h*4];
-
         int idx = 0;
         for (int yy = y; yy < y+h; yy++) {
             for (int xx = x; xx < x+w; xx++) {
@@ -56,28 +54,22 @@ public class ResizeableImage {
                 }
             }
         }
-
         return new ResizeableImage(this.rootImage, ret, w, h);
     }
 
     public int getSimilarity(ResizeableImage img) {
-
         int ret = 0;
-
         if (img.buffer.length != this.buffer.length) {
             return Integer.MAX_VALUE;
         }
-
         for (int i = 0; i < img.buffer.length; i+=4) {
             double colorFactor = (double) Math.min(img.buffer[i], this.buffer[i]) / 255;
             int dalpha = Math.abs(img.buffer[i]   - this.buffer[i]) * 3;
             int db     = Math.abs(img.buffer[i+1] - this.buffer[i+1]);
             int dg     = Math.abs(img.buffer[i+2] - this.buffer[i+2]);
             int dr     = Math.abs(img.buffer[i+3] - this.buffer[i+3]);
-             
             ret += (1.0 - colorFactor) * dalpha + colorFactor * (db + dg + dr);
         }
-
         return ret;
     }
 

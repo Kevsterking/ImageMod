@@ -3,7 +3,6 @@ package com.kevsterking.ImageBuilder;
 import com.kevsterking.WorldTransformer.WorldTransformAction;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
-
 import java.util.ArrayList;
 
 public class BlockImageCreationWorker extends Thread {

@@ -14,7 +14,7 @@ public class BlockImageBuilder extends Thread {
     public BlockImageBuilder(BlockImageCreationData creationData, ArrayList<ImageBlock> image_blocks) {
     	this.image_blocks = image_blocks;
         this.creationData = creationData;
-    	this.start();
+    	this.run();//.start();
     }
 
     // Report back error
@@ -62,9 +62,10 @@ public class BlockImageBuilder extends Thread {
         for (int y = 0; y < this.creationData.blockHeight; y++) {
             workers[y] = new BlockImageCreationWorker(this.transform, this.creationData, preSized, tileWidth, tileHeight);
             workers[y].setWorkload(0, this.creationData.blockWidth, y, y+1);
-            workers[y].start();
+            workers[y].run();//.start();
         }
-    
+
+        /*
         for (int y = 0; y < this.creationData.blockHeight; y++) {
         	try {
     			workers[y].join();
@@ -72,7 +73,7 @@ public class BlockImageBuilder extends Thread {
 				e.printStackTrace();
 			}
         }
-
+        */
         this.reportSuccess(this.transform);
         
         try {
