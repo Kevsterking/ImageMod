@@ -7,6 +7,7 @@ import com.kevsterking.ImageBuilder.ResizeableImage;
 import com.kevsterking.ImagemodClient;
 import com.kevsterking.WorldTransformer.WorldTransformAction;
 import com.kevsterking.util.DirectoryArgument;
+import com.kevsterking.util.ImageFileArgument;
 import com.kevsterking.util.PathArgument;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
@@ -42,7 +43,7 @@ import java.util.Stack;
 
 public class ImageCommand {
 
-    private static final PathArgument src_arg = new PathArgument();
+    private static final PathArgument src_arg = new ImageFileArgument();
     private static final PathArgument dir_arg = new DirectoryArgument();
     private static ArrayList<ImageBlock> image_blocks = new ArrayList<ImageBlock>();
     private static Stack<WorldTransformAction> undo_stack = new Stack<>();

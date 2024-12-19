@@ -84,6 +84,11 @@ public class PathArgument implements ArgumentType<Path> {
             (p.toFile().isDirectory() ? "/" : "");
     }
 
+    // Filter unwanted path suggestions
+    public boolean filter_path(Path path) {
+        return true;
+    }
+
     @Override
     public <S> CompletableFuture<Suggestions> listSuggestions(
             CommandContext<S> context,
@@ -100,14 +105,19 @@ public class PathArgument implements ArgumentType<Path> {
                 .filter(
                     path -> path.getFileName().toString().indexOf(query) == 0
                 )
+                .filter(this::filter_path)
                 .forEach(
                     path -> {
                         String path_str = PathArgument.get_formatted_path(path);
-                        builder.suggest(
-                            path_str.indexOf(' ') >= 0 ||
-                            path_str.indexOf(':') >= 0 ?
-                            "\"" + path_str + "\"" : path_str
-                        );
+                        try {
+                            if (StringArgumentType.string().parse(new StringReader(path_str)).compareTo(path_str) == 0) {
+                                builder.suggest(path_str);
+                            } else {
+                                builder.suggest("\"" + path_str + "\"");
+                            }
+                        } catch (Exception e) {
+                            builder.suggest("\"" + path_str + "\"");
+                        }
                     }
                 );
         } catch (Exception ignored) {}
@@ -118,5 +128,4 @@ public class PathArgument implements ArgumentType<Path> {
     public Collection<String> getExamples() {
         return PathArgument.EXAMPLES;
     }
-
 }
