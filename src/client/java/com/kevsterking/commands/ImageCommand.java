@@ -133,7 +133,7 @@ public class ImageCommand {
             height_set = true;
         } catch (Exception e) {}
 
-        Path path = PathArgument.getPath(ctx, "src");
+        Path path = PathArgument.get_path(ctx, "src");
 
         try {
             image = new ResizeableImage(ImageIO.read(path.toFile()));
@@ -227,9 +227,9 @@ public class ImageCommand {
     private static int set_directory_execute(
             CommandContext<FabricClientCommandSource> ctx
     ) {
-        Path dir = DirectoryArgument.getPath(ctx, "dir");
+        Path dir = DirectoryArgument.get_path(ctx, "dir");
         try {
-            PathArgument.setRootDirectory(dir);
+            PathArgument.set_root_directory(String.valueOf(dir));
             ctx.getSource().sendFeedback(Text.literal("Successfully set image directory to \"" + dir.toString() + "\""));
             return 1;
         } catch (NotDirectoryException e) {

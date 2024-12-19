@@ -19,12 +19,6 @@ public class ImagemodClient implements ClientModInitializer {
 
 		LOGGER.info("Initializing");
 
-		try {
-			PathArgument.setRootDirectory(Path.of(System.getProperty("user.home") + "/Downloads"));
-		} catch (Exception e) {
-			LOGGER.error("Could not set default location to downloads folder");
-		}
-
 		// Register commands
 		ClientCommandRegistrationCallback.EVENT.register(ImageCommand::register);
 

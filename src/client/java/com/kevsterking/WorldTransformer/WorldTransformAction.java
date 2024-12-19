@@ -5,8 +5,6 @@ import net.minecraft.util.math.BlockPos;
 
 public class WorldTransformAction {
 
-	/*=======================vars=========================*/
-
 	public WorldTransformCreationData creationData;
 	public BlockState[][][] previousStructure;
 	public BlockState[][][] structure;
@@ -19,8 +17,6 @@ public class WorldTransformAction {
 		this.structure 			= new BlockState[creationData.w][creationData.h][creationData.d];
 		this.previousStructure 	= WorldTransformAction.getCurrentStructure(creationData);
 	}
-	
-    /*=====================methods========================*/
 
 	// Get current blockstates in world at position
 	public static BlockState[][][] getCurrentStructure(WorldTransformCreationData creationData) {

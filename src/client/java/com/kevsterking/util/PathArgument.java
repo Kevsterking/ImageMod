@@ -12,6 +12,7 @@ import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 
 import java.io.FileNotFoundException;
+import java.nio.file.Files;
 import java.nio.file.NotDirectoryException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -24,178 +25,92 @@ public class PathArgument implements ArgumentType<Path> {
     private static final Collection<String> EXAMPLES = Arrays.asList("\"" + System.getProperty("user.home") + "/Downloads\"");
     private static final SimpleCommandExceptionType PATH_NOT_FOUND = new SimpleCommandExceptionType(new LiteralMessage("Path not found"));
 
-    public static Path rootDir;
+    public static Path root_directory = get_default_path();
 
-    static {
+    // Get the default path
+    private static Path get_default_path() {
         try {
-            rootDir = PathArgument.getPath(System.getProperty("user.home") + "/Downloads");
-        } catch(FileNotFoundException e) {
-            try {
-                rootDir = PathArgument.getPath(System.getProperty("user.home"));
-            } catch (FileNotFoundException ex) {
-                rootDir = null;
-                ex.printStackTrace();
-            }
+            return PathArgument.get_path(System.getProperty("user.home") + "/Downloads/");
+        } catch (FileNotFoundException e) {
+            return null;
         }
     }
 
-    public PathArgument() {
-        try {
-            this.rootDir = this.getPath(System.getProperty("user.home"));
-        } catch (Exception e) {
-            System.out.println("Exception in PathArgument");
-            e.printStackTrace();
-        }
-    }
-
-    public static Path getPath(Path path) throws FileNotFoundException {
-
-        if (PathArgument.rootDir != null) {
-            try {
-                Path ret = PathArgument.rootDir.resolve(path);
-                if (ret.toFile().exists()) {
-                    return ret;
-                }
-            } catch (Exception e) {
-                System.out.println("Exception in PathArgument");
-                e.printStackTrace();
-            }
-        }
-
-        try {
-            if (path.toFile().exists()) {
-                return path;
-            }
-        } catch (Exception e) {
-            System.out.println("Exception in PathArgument");
-            e.printStackTrace();
-        }
-
-        throw new FileNotFoundException();
-    }
-    public static Path getPath(String str) throws FileNotFoundException {
-
-    	try {
-            return PathArgument.getPath(Paths.get(str));
-        } catch (Exception e) {
-            System.out.println("Exception in PathArgument");
-            e.printStackTrace();
-        }
-
-        throw new FileNotFoundException();
-    }
-
-    public static Path getDirectory(Path path) throws FileNotFoundException, NotDirectoryException {
-        Path dir = PathArgument.getPath(path);
-        if (!dir.toFile().isDirectory()) {
-            throw new NotDirectoryException(path.toFile().getPath());
-        }
+    // Get a directory that fails with exception if not a directory
+    public static Path get_directory(Path path) throws FileNotFoundException, NotDirectoryException {
+        Path dir = PathArgument.get_path(path);
+        if (!dir.toFile().isDirectory()) throw new NotDirectoryException(path.toFile().getPath());
         return dir;
     }
-    public static Path getDirectory(String str) throws FileNotFoundException, NotDirectoryException {
-
-        Path ret = null;
-
-        try {
-            ret = PathArgument.getPath(str);
-        } catch (Exception e) {
-            System.out.println("Exception in PathArgument");
-            e.printStackTrace();
-        }
-
-        return PathArgument.getDirectory(ret);
+    public static Path get_directory(String str) throws FileNotFoundException, NotDirectoryException {
+        return PathArgument.get_directory(Paths.get(str));
     }
 
-    public static void setRootDirectory(Path path) throws FileNotFoundException, NotDirectoryException {
-        PathArgument.rootDir = PathArgument.getDirectory(path);
+    // Get a path that fails with exception if does not exist
+    public static Path get_path(Path path) throws FileNotFoundException {
+        Path ret = PathArgument.root_directory != null ? PathArgument.root_directory.resolve(path) : path;
+        if (ret.toFile().exists()) return ret;
+        if (path.toFile().exists()) return path;
+        throw new FileNotFoundException();
     }
-    public static void setRootDirectory(String dir) throws FileNotFoundException, NotDirectoryException {
-        PathArgument.rootDir = PathArgument.getDirectory(dir);
+    public static Path get_path(String str) throws FileNotFoundException {
+    	return PathArgument.get_path(Paths.get(str));
     }
-
-    @Override
-    public Path parse(StringReader reader) throws CommandSyntaxException {
-
-        String str = StringArgumentType.string().parse(reader);
-        Path ret;
-
-        try {
-            ret = PathArgument.getPath(str);
-        } catch (FileNotFoundException e) {
-            throw PathArgument.PATH_NOT_FOUND.createWithContext(reader);
-        }
-
-        return ret;
-    }
-
-    public static Path getPath(final CommandContext<FabricClientCommandSource> context, final String name) {
+    public static Path get_path(final CommandContext<FabricClientCommandSource> context, final String name) {
         return context.getArgument(name, Path.class);
     }
 
-    private String getFormattedPathString(Path path) {
+    // Set the root directory
+    public static void set_root_directory(String path) throws NotDirectoryException, FileNotFoundException {
+        PathArgument.root_directory = get_directory(path);
+    }
 
-    	String ret;
-        
-    	Path placeholder;
-    	Path relative = PathArgument.rootDir.relativize(path);
-
-        if (!relative.toString().contains("..")) {
-            placeholder = relative;
-        } else {
-        	placeholder = path;
+    // Get the path for file given input
+    @Override
+    public Path parse(StringReader reader) throws CommandSyntaxException {
+        try {
+            return PathArgument.get_path(StringArgumentType.string().parse(reader));
+        } catch (FileNotFoundException e) {
+            throw PathArgument.PATH_NOT_FOUND.createWithContext(reader);
         }
-        
-        if (path.toFile().isDirectory()) {
-            ret = placeholder.toString() + "/";
-        } else  {
-            ret = placeholder.toString();
-        }
+    }
 
-        ret = ret.replace("\\", "/");
-        return ret;
+    // Get short form string for path given root path of class
+    private static String get_formatted_path(Path path) {
+        Path p = path.startsWith(PathArgument.root_directory) ?
+            PathArgument.root_directory.relativize(path) :
+            path;
+        return p.toString().replace("\\", "/") +
+            (p.toFile().isDirectory() ? "/" : "");
     }
 
     @Override
-    public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> context, SuggestionsBuilder builder) {
-
+    public <S> CompletableFuture<Suggestions> listSuggestions(
+            CommandContext<S> context,
+            SuggestionsBuilder builder
+    ) {
         StringReader stringReader = new StringReader(builder.getInput());
         stringReader.setCursor(builder.getStart());
-
-        String totalString  = null;
-        String pathStr      = null;
-        String searchString = null;
-
         try {
-            totalString = StringArgumentType.string().parse(stringReader);
-        } catch (CommandSyntaxException e) {
-            System.out.println("Exception in PathArgument");
-            e.printStackTrace();
-        }
-
-        if (totalString != null) {
-            int dirIndex = totalString.lastIndexOf("/") + 1;
-            if (dirIndex >= 0) {
-                pathStr      = totalString.substring(0, dirIndex);
-                searchString = totalString.substring(dirIndex);
-            }
-        }
-
-        try {
-            Path path = this.getPath(pathStr);
-            int i = 0;
-            for (String str : path.toFile().list()) {
-                if (str.indexOf(searchString) == 0) {
-                    if (++i > 100) break;
-                    String suggestion = this.getFormattedPathString(path.resolve(str));
-                    builder.suggest("\"" + suggestion + "\"");
-                }
-            }
-        }
-        catch (Exception e) {
-            System.out.println("Exception in PathArgument");
-            e.printStackTrace();
-        }
-
+            String parsed = StringArgumentType.string().parse(stringReader);
+            int i = parsed.lastIndexOf("/") + 1;
+            String directory = parsed.substring(0, i);
+            String query = parsed.substring(i);
+            Files.list(PathArgument.get_directory(directory))
+                .filter(
+                    path -> path.getFileName().toString().indexOf(query) == 0
+                )
+                .forEach(
+                    path -> {
+                        String path_str = PathArgument.get_formatted_path(path);
+                        builder.suggest(
+                            path_str.indexOf(' ') >= 0 ||
+                            path_str.indexOf(':') >= 0 ?
+                            "\"" + path_str + "\"" : path_str
+                        );
+                    }
+                );
+        } catch (Exception ignored) {}
         return builder.buildFuture();
     }
 
