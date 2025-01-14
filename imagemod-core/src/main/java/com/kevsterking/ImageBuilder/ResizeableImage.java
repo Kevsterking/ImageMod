@@ -1,6 +1,7 @@
 package com.kevsterking.ImageBuilder;
 
-import java.awt.*;
+import java.awt.Graphics2D;
+import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBuffer;
 
@@ -68,7 +69,7 @@ public class ResizeableImage {
             int db     = Math.abs(img.buffer[i+1] - this.buffer[i+1]);
             int dg     = Math.abs(img.buffer[i+2] - this.buffer[i+2]);
             int dr     = Math.abs(img.buffer[i+3] - this.buffer[i+3]);
-            ret += (1.0 - colorFactor) * dalpha + colorFactor * (db + dg + dr);
+            ret += (int) ((1.0 - colorFactor) * dalpha + colorFactor * (db + dg + dr));
         }
         return ret;
     }
