@@ -10,4 +10,6 @@ pluginManagement {
 }
 
 rootProject.name = 'imagemod'
+
 include 'imagemod-core'
+include 'imagemod-fabric'
