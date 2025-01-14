@@ -1,4 +1,4 @@
-package com.kevsterking.util;
+package com.kevsterking.imagemod.fabric.util;
 
 import com.mojang.brigadier.LiteralMessage;
 import com.mojang.brigadier.StringReader;

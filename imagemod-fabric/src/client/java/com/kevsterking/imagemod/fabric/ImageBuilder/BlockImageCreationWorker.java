@@ -1,6 +1,7 @@
-package com.kevsterking.ImageBuilder;
+package com.kevsterking.imagemod.fabric.ImageBuilder;
 
-import com.kevsterking.WorldTransformer.WorldTransformAction;
+import com.kevsterking.imagemod.core.ImageBuilder.ResizeableImage;
+import com.kevsterking.imagemod.fabric.WorldTransformer.WorldTransformAction;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import java.util.ArrayList;

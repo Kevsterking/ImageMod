@@ -1,5 +1,6 @@
-package com.kevsterking.ImageBuilder;
+package com.kevsterking.imagemod.fabric.ImageBuilder;
 
+import com.kevsterking.imagemod.core.ImageBuilder.ResizeableImage;
 import net.minecraft.block.BlockState;
 
 // Class for storing a state and it's respective

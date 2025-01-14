@@ -1,4 +1,4 @@
-package com.kevsterking.ImageBuilder;
+package com.kevsterking.imagemod.core.ImageBuilder;
 
 import java.awt.Graphics2D;
 import java.awt.Color;

@@ -1,4 +1,4 @@
-package com.kevsterking.mixin.client;
+package com.kevsterking.imagemod.fabric.mixin.client;
 
 import net.minecraft.client.MinecraftClient;
 import org.spongepowered.asm.mixin.Mixin;

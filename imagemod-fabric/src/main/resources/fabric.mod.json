@@ -19,7 +19,7 @@
 			"com.kevsterking.Imagemod"
 		],
 		"client": [
-			"com.kevsterking.ImagemodClient"
+			"com.kevsterking.imagemod.fabric.ImagemodClient"
 		]
 	},
 	"mixins": [

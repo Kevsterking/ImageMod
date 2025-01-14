@@ -1,6 +1,6 @@
 {
 	"required": true,
-	"package": "com.kevsterking.mixin.client",
+	"package": "com.kevsterking.imagemod.fabric.mixin.client",
 	"compatibilityLevel": "JAVA_21",
 	"client": [
 		"ExampleClientMixin"

@@ -9,7 +9,7 @@ pluginManagement {
 	}
 }
 
-rootProject.name = 'imagemod'
+rootProject.name = "${mod_id}"
 
 include 'imagemod-core'
 include 'imagemod-fabric'

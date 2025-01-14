@@ -1,6 +1,7 @@
-package com.kevsterking.ImageBuilder;
+package com.kevsterking.imagemod.fabric.ImageBuilder;
 
-import com.kevsterking.WorldTransformer.WorldTransformAction;
+import com.kevsterking.imagemod.core.ImageBuilder.ResizeableImage;
+import com.kevsterking.imagemod.fabric.WorldTransformer.WorldTransformAction;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;

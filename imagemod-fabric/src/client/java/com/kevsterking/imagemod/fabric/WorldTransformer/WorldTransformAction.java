@@ -1,4 +1,4 @@
-package com.kevsterking.WorldTransformer;
+package com.kevsterking.imagemod.fabric.WorldTransformer;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.util.math.BlockPos;

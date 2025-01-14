@@ -1,14 +1,14 @@
-package com.kevsterking.commands;
+package com.kevsterking.imagemod.fabric.commands;
 
-import com.kevsterking.ImageBuilder.BlockImageBuilder;
-import com.kevsterking.ImageBuilder.BlockImageCreationData;
-import com.kevsterking.ImageBuilder.ImageBlock;
-import com.kevsterking.ImageBuilder.ResizeableImage;
-import com.kevsterking.ImagemodClient;
-import com.kevsterking.WorldTransformer.WorldTransformAction;
-import com.kevsterking.util.DirectoryArgument;
-import com.kevsterking.util.ImageFileArgument;
-import com.kevsterking.util.PathArgument;
+import com.kevsterking.imagemod.core.ImageBuilder.ResizeableImage;
+import com.kevsterking.imagemod.fabric.ImageBuilder.BlockImageBuilder;
+import com.kevsterking.imagemod.fabric.ImageBuilder.BlockImageCreationData;
+import com.kevsterking.imagemod.fabric.ImageBuilder.ImageBlock;
+import com.kevsterking.imagemod.fabric.ImagemodClient;
+import com.kevsterking.imagemod.fabric.WorldTransformer.WorldTransformAction;
+import com.kevsterking.imagemod.fabric.util.DirectoryArgument;
+import com.kevsterking.imagemod.fabric.util.ImageFileArgument;
+import com.kevsterking.imagemod.fabric.util.PathArgument;
 import javax.imageio.ImageIO;
 import java.io.FileNotFoundException;
 import java.nio.file.NotDirectoryException;

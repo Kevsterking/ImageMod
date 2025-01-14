@@ -1,7 +1,8 @@
-package com.kevsterking.ImageBuilder;
+package com.kevsterking.imagemod.fabric.ImageBuilder;
 
-import com.kevsterking.WorldTransformer.WorldTransformAction;
-import com.kevsterking.WorldTransformer.WorldTransformCreationData;
+import com.kevsterking.imagemod.core.ImageBuilder.ResizeableImage;
+import com.kevsterking.imagemod.fabric.WorldTransformer.WorldTransformAction;
+import com.kevsterking.imagemod.fabric.WorldTransformer.WorldTransformCreationData;
 
 import java.util.ArrayList;
 

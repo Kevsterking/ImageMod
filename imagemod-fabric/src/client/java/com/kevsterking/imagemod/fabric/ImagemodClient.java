@@ -1,6 +1,6 @@
-package com.kevsterking;
+package com.kevsterking.imagemod.fabric;
 
-import com.kevsterking.commands.ImageCommand;
+import com.kevsterking.imagemod.fabric.commands.ImageCommand;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import org.slf4j.Logger;
