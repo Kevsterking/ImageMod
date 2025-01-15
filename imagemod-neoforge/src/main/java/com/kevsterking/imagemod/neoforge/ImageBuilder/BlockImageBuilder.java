@@ -1,7 +1,7 @@
-package com.kevsterking.imagemod.fabric.ImageBuilder;
+package com.kevsterking.imagemod.neoforge.ImageBuilder;
 
-import com.kevsterking.imagemod.fabric.WorldTransformer.WorldTransformAction;
-import com.kevsterking.imagemod.fabric.WorldTransformer.WorldTransformCreationData;
+import com.kevsterking.imagemod.neoforge.WorldTransformer.WorldTransformAction;
+import com.kevsterking.imagemod.neoforge.WorldTransformer.WorldTransformCreationData;
 
 import java.util.ArrayList;
 

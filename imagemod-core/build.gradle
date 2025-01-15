@@ -1,16 +1,18 @@
 plugins {
     id 'java'
-//    id 'fabric-loom' version "${loom_version}"
 }
 
 group 'com.kevsterking.imagemod.core'
 version "${mod_version}"
 
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(java_version)
+    }
+}
+
 repositories {
     mavenCentral()
 }
 
-dependencies {
-//    minecraft "com.mojang:minecraft:${project.minecraft_version}"
-//    mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
-}
+dependencies {}

@@ -1,6 +1,6 @@
-package com.kevsterking.imagemod.fabric.ImageBuilder;
+package com.kevsterking.imagemod.neoforge.ImageBuilder;
 
-import net.minecraft.block.BlockState;
+import net.minecraft.world.level.block.state.BlockState;
 
 // Class for storing a state and it's respective
 // texture to use for image creation

@@ -1,6 +1,6 @@
 package com.kevsterking.imagemod.fabric.commands;
 
-import com.kevsterking.imagemod.core.ImageBuilder.ResizeableImage;
+import com.kevsterking.imagemod.fabric.ImageBuilder.ResizeableImage;
 import com.kevsterking.imagemod.fabric.ImageBuilder.BlockImageBuilder;
 import com.kevsterking.imagemod.fabric.ImageBuilder.BlockImageCreationData;
 import com.kevsterking.imagemod.fabric.ImageBuilder.ImageBlock;

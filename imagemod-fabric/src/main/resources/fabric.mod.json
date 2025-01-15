@@ -1,41 +1,39 @@
 {
 	"schemaVersion": 1,
-	"id": "imagemod",
-	"version": "${version}",
-	"name": "imagemod",
-	"description": "A simple mod for creation of pixel-art in Minecraft",
+	"id": "${mod_id}",
+	"version": "${mod_version}",
+	"name": "${mod_name}",
+	"description": "${mod_description}",
 	"authors": [
-		"Kevsterking"
+		"${mod_authors}"
 	],
 	"contact": {
 		"homepage": "https://fabricmc.net/",
-		"sources": "https://github.com/FabricMC/fabric-example-mod"
+		"sources": "${mod_git_repo}"
 	},
-	"license": "Free For All Use",
-	"icon": "assets/imagemod/icon.png",
+	"license": "${mod_license}",
+	"icon": "assets/${mod_id}/icon.png",
 	"environment": "*",
 	"entrypoints": {
 		"main": [
-			"com.kevsterking.Imagemod"
+			"${mod_group}.fabric.Imagemod"
 		],
 		"client": [
-			"com.kevsterking.imagemod.fabric.ImagemodClient"
+			"${mod_group}.fabric.ImagemodClient"
 		]
 	},
 	"mixins": [
-		"imagemod.mixins.json",
+		"${mod_id}.mixins.json",
 		{
-			"config": "imagemod.client.mixins.json",
+			"config": "${mod_id}.client.mixins.json",
 			"environment": "client"
 		}
 	],
 	"depends": {
-		"fabricloader": ">=0.16.9",
-		"minecraft": "~1.21",
-		"java": ">=21",
-		"fabric-api": "*"
+		"fabricloader": "${fabric_loader_version_range}",
+		"minecraft": "${fabric_minecraft_version_range}",
+		"java": ">=${java_version}",
+		"fabric-api": "${fabric_api_version_range}"
 	},
-	"suggests": {
-		"another-mod": "*"
-	}
+	"suggests": {}
 }

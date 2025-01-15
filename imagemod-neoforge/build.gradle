@@ -3,11 +3,11 @@ plugins {
     id 'eclipse'
     id 'idea'
     id 'maven-publish'
-    id 'net.neoforged.gradle.userdev' version '7.0.170'
+    id 'net.neoforged.gradle.userdev' version '7.0.173'
 }
 
 version = mod_version
-group = "${project.mod_group}.neoforge"
+group = "${mod_group}.neoforge"
 
 repositories {
     mavenLocal()
@@ -34,19 +34,23 @@ runs {
     }
 
     client {
-        systemProperty 'forge.enabledGameTestNamespaces', project.mod_id
+        // Comma-separated list of namespaces to load gametests from. Empty = all namespaces.
+        systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
     }
 
     server {
-        systemProperty 'forge.enabledGameTestNamespaces', project.mod_id
+        systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
         argument '--nogui'
     }
 
+    // This run config launches GameTestServer and runs all registered gametests, then exits.
+    // By default, the server will crash when no gametests are provided.
+    // The gametest system is also enabled by default for other run configs under the /test command.
     gameTestServer {
-        systemProperty 'forge.enabledGameTestNamespaces', project.mod_id
+        systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
     }
 
-    data {
+    clientData {
         // example of overriding the workingDirectory set in configureEach above, uncomment if you want to use it
         // workingDirectory project.file('run-data')
 
@@ -91,7 +95,7 @@ dependencies {
     // implementation files("libs/coolmod-${mc_version}-${coolmod_version}.jar")
 
     // Example project dependency using a sister or child project:
-    // implementation project(":myproject")
+    implementation project(":imagemod-core")
 
     // For more info:
     // http://www.gradle.org/docs/current/userguide/artifact_dependencies_tutorial.html
@@ -104,8 +108,8 @@ dependencies {
 // See https://docs.gradle.org/current/dsl/org.gradle.language.jvm.tasks.ProcessResources.html
 tasks.withType(ProcessResources).configureEach {
     var replaceProperties = [
-            minecraft_version           : minecraft_version,
-            minecraft_version_range     : minecraft_version_range,
+            minecraft_version           : neo_minecraft_version,
+            minecraft_version_range     : neo_minecraft_version_range,
             neo_version                 : neo_version,
             neo_version_range           : neo_version_range,
             neo_loader_version_range    : neo_loader_version_range,
@@ -117,7 +121,6 @@ tasks.withType(ProcessResources).configureEach {
             mod_description             : mod_description
     ]
     inputs.properties replaceProperties
-
     filesMatching(['META-INF/neoforge.mods.toml']) {
         expand replaceProperties
     }

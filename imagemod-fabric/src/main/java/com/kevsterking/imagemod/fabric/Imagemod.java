@@ -1,4 +1,4 @@
-package com.kevsterking;
+package com.kevsterking.imagemod.fabric;
 
 import net.fabricmc.api.ModInitializer;
 

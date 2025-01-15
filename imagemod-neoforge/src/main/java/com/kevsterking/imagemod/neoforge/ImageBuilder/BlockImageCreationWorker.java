@@ -1,8 +1,9 @@
-package com.kevsterking.imagemod.fabric.ImageBuilder;
+package com.kevsterking.imagemod.neoforge.ImageBuilder;
 
-import com.kevsterking.imagemod.fabric.WorldTransformer.WorldTransformAction;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
+import com.kevsterking.imagemod.neoforge.WorldTransformer.WorldTransformAction;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
+
 import java.util.ArrayList;
 
 public class BlockImageCreationWorker extends Thread {
@@ -47,7 +48,7 @@ public class BlockImageCreationWorker extends Thread {
     // Save record low and return when all options
     // has been tried
     private BlockState getBestFit(ResizeableImage img, ArrayList<ImageBlock> blockList) {
-        BlockState ret = Blocks.AIR.getDefaultState();
+        BlockState ret = Blocks.AIR.defaultBlockState();
         int minScore = img.getSimilarity(ResizeableImage.getTransparant(img.width, img.height));
         for (ImageBlock block : blockList) {
             int score = block.image.getSimilarity(img);

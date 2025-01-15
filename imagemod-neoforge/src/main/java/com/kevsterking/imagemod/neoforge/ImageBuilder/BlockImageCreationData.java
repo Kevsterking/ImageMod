@@ -1,14 +1,15 @@
-package com.kevsterking.imagemod.fabric.ImageBuilder;
+package com.kevsterking.imagemod.neoforge.ImageBuilder;
 
-import com.kevsterking.imagemod.fabric.WorldTransformer.WorldTransformAction;
-import net.minecraft.client.world.ClientWorld;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
+import com.kevsterking.imagemod.neoforge.WorldTransformer.WorldTransformAction;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.world.level.Level;
+
 import java.util.function.Consumer;
 
 public class BlockImageCreationData {
     public ResizeableImage image;
-    public ClientWorld world;
+    public Level world;
     public BlockPos pos;
     public Direction xDir;
     public Direction yDir;
