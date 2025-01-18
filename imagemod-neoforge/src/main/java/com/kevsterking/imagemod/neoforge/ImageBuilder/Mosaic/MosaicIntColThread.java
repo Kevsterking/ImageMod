@@ -1,15 +1,15 @@
 package com.kevsterking.imagemod.neoforge.ImageBuilder.Mosaic;
 
-import com.kevsterking.imagemod.neoforge.ImageBuilder.BlockUtil;
+import com.kevsterking.imagemod.neoforge.ImageBuilder.ImageBlock;
 import com.kevsterking.imagemod.neoforge.ImageBuilder.ImageUtil;
 import com.kevsterking.imagemod.neoforge.ImagemodClient;
 import com.kevsterking.imagemod.neoforge.WorldTransformer.WorldStructure;
-import net.minecraft.world.level.block.state.BlockState;
+import com.kevsterking.imagemod.neoforge.commands.ImageCommand;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
 
-public class MosaicIntColThread extends MosaicGenerator<IntColorVector, BufferedImage, BlockState, WorldStructure> {
+public class MosaicIntColThread extends MosaicGenerator<IntColorVector, BufferedImage, ImageBlock, WorldStructure> {
 
   protected WorldStructure get_empty_result(final int tile_cols, final int tile_rows) {
     return new WorldStructure(tile_cols, tile_rows, 1);
@@ -19,8 +19,8 @@ public class MosaicIntColThread extends MosaicGenerator<IntColorVector, Buffered
     return new IntColorVector[size];
   }
 
-  protected void set_result(WorldStructure res, BlockState state, final int x, final int y) {
-    res.structure[x][y][0] = state;
+  protected void set_result(WorldStructure res, ImageBlock image_block, final int x, final int y) {
+    res.structure[x][this.tile_rows-y-1][0] = image_block.state;
   }
 
   protected void generate_tiles(WorldStructure result, final int tile_cols, final int tile_rows) {
@@ -89,10 +89,9 @@ public class MosaicIntColThread extends MosaicGenerator<IntColorVector, Buffered
     return ret;
   }
 
-  protected IntColorVector get_tile_type(BlockState block_state, final int tile_size) {
+  protected IntColorVector get_tile_type(ImageBlock image_block, final int tile_size) {
     int[] ret = new int[tile_size*tile_size];
-    BufferedImage img = ImageUtil.load(BlockUtil.get_texture(block_state), tile_size, tile_size);
-    img.getRGB(
+    ImageUtil.load(image_block.image, tile_size, tile_size).getRGB(
       0,
       0,
       this.tile_size,

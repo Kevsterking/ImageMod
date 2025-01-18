@@ -30,6 +30,8 @@ public abstract class MosaicGenerator<TYPE, SRC, TILE, RES> {
 
   public RES generate(SRC src, final int tile_cols, final int tile_rows) {
     RES ret = this.get_empty_result(tile_cols, tile_rows);
+    this.tile_cols = tile_cols;
+    this.tile_rows = tile_rows;
     this.source_type = this.get_source_type(src, tile_cols, tile_rows);
     this.generate_tiles(ret, tile_cols, tile_rows);
     return ret;

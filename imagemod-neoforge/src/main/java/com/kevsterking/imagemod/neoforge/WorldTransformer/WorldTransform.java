@@ -7,13 +7,12 @@ import net.minecraft.world.level.block.state.BlockState;
 
 public class WorldTransform {
 
-	private final BlockState[][][] previous_structure;
-	public BlockState[][][] structure;
+	private final WorldStructure previous_structure;
+	private final WorldStructure structure;
 
 	private final Level level;
 	private final BlockPos position;
 	private final Direction direction_x, direction_y, direction_z;
-	private final int width, height, depth;
 
 	public WorldTransform(
 		Level level,
@@ -21,55 +20,52 @@ public class WorldTransform {
 		Direction direction_x,
 		Direction direction_y,
 		Direction direction_z,
-		int width, int height, int depth
+		WorldStructure structure
 	) {
 		this.level = level;
 		this.position = position;
 		this.direction_x = direction_x;
 		this.direction_y = direction_y;
 		this.direction_z = direction_z;
-		this.width = width;
-		this.height = height;
-		this.depth = depth;
-		this.structure = new BlockState[width][height][depth];
+		this.structure = structure;
 		this.previous_structure = this.get_current_structure();
 	}
 
 	// Get current BlockState's in world at position
-	public BlockState[][][] get_current_structure() {
-		BlockState[][][] ret = new BlockState[this.width][this.height][this.depth];
-		for (int x = 0; x < this.width; x++) {
-			for (int y = 0; y < this.height; y++) {
-				for (int z = 0; z < this.depth; z++) {
+	public WorldStructure get_current_structure() {
+		WorldStructure ret = new WorldStructure(this.structure.width, this.structure.height, this.structure.depth);
+		for (int x = 0; x < this.structure.width; x++) {
+			for (int y = 0; y < this.structure.height; y++) {
+				for (int z = 0; z < this.structure.depth; z++) {
 					BlockPos pos = this.position
 						.relative(this.direction_x, x)
 						.relative(this.direction_y, y)
 						.relative(this.direction_z, z);
-					ret[x][y][z] = this.level.getBlockState(pos);
+					ret.structure[x][y][z] = this.level.getBlockState(pos);
 				}
 			}
 		}
 		return ret;
 	}
 
-	public void perform_action() {
+	public void perform_transform() {
 		this.place_structure(this.structure);
 	}
 	
-	public void revert_action() {
+	public void revert_transform() {
 		this.place_structure(this.previous_structure);
 	}
 
-	private void place_structure(BlockState[][][] structure) {
-		for (int x = 0; x < this.width; x++) {
-			for (int y = 0; y < this.height; y++) {
-				for (int z = 0; z < this.depth; z++) {
+	private void place_structure(WorldStructure structure) {
+		for (int x = 0; x < structure.width; x++) {
+			for (int y = 0; y < structure.height; y++) {
+				for (int z = 0; z < structure.depth; z++) {
 					BlockPos pos = this.position
 						.relative(this.direction_x, x)
 						.relative(this.direction_y, y)
 						.relative(this.direction_z, z);
-					BlockState state = structure[x][y][z];
-					this.level.setBlock(pos, state, 0);
+					if (structure.structure[x][y][z] == null) continue;
+					this.level.setBlock(pos, structure.structure[x][y][z], 0);
 				}
 			}
 		}

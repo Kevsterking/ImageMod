@@ -1,6 +1,7 @@
 package com.kevsterking.imagemod.neoforge.commands;
 
 import com.kevsterking.imagemod.neoforge.ImageBuilder.*;
+import com.kevsterking.imagemod.neoforge.ImageBuilder.Mosaic.MosaicIntColThread;
 import com.kevsterking.imagemod.neoforge.ImagemodClient;
 import com.kevsterking.imagemod.neoforge.WorldTransformer.WorldTransform;
 import com.kevsterking.imagemod.neoforge.util.DirectoryArgument;
@@ -12,6 +13,7 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import net.minecraft.client.Minecraft;
 
 import javax.imageio.ImageIO;
@@ -50,72 +52,46 @@ public class ImageCommand {
 
   private static final PathArgument src_arg = new ImageFileArgument();
   private static final PathArgument dir_arg = new DirectoryArgument();
+  private static final MosaicIntColThread image_builder = new MosaicIntColThread();
 
-  private static final ArrayList<BlockColor> image_blocks = new ArrayList<>();
+  private static final ArrayList<ImageBlock> image_blocks = new ArrayList<>();
   private static final Stack<WorldTransform> undo_stack = new Stack<>();
   private static final Stack<WorldTransform> redo_stack = new Stack<>();
 
   // Filter out unwanted blocks based on properties that
   // create unwanted effects
   // true -> keep block, false -> don't use block
-  private static boolean filter_block(Block block) {
+  private static boolean filter_block(Block block) throws Exception {
     BlockState state = block.defaultBlockState();
     VoxelShape vs = state.getShape(EmptyBlockGetter.INSTANCE, BlockPos.ZERO);
-    return (Block.isShapeFullBlock(vs) &&
-      !block.hasDynamicShape() &&
-      state.getLightEmission(EmptyBlockGetter.INSTANCE, BlockPos.ZERO) == 0 &&
-      !(block instanceof CoralBlock) &&
-      !(block instanceof LeavesBlock));
-  }
-
-  private static ResourceLocation get_resource_location(Block block) {
-    // Black magic, don't question it
-    BlockState state = block.defaultBlockState();
-    ModelResourceLocation mrl = BlockModelShaper.stateToModelLocation(state);
-    TextureAtlasSprite sprite = Minecraft.getInstance().getModelManager().getModel(mrl).getParticleIcon(ModelData.EMPTY);
-    ResourceLocation block_id = sprite.atlasLocation();
-    String path = sprite.contents().name().getPath();
-    return ResourceLocation.fromNamespaceAndPath(block_id.getNamespace(), "textures/" + path + ".png");
-  }
-
-  // Load textured resource for block into ImageBlock
-  private static BlockColor get_block_color(Block block, Direction dir) throws Exception {
-    BlockState state = block.defaultBlockState();
-    ResourceManager resource_manager = Minecraft.getInstance().getResourceManager();
-    ResourceLocation texture_id = get_resource_location(block);
-    if (resource_manager.getResource(texture_id).isEmpty()) {
-      throw new Exception("No resource available for block");
-    }
-    BufferedImage block_texture = ImageIO.read(resource_manager.getResource(texture_id).get().open());
-    return new BlockColor(state, ImageUtil.load_color(block_texture));
+    if (!Block.isShapeFullBlock(vs)) throw new Exception("Is not full block");
+    if (block.hasDynamicShape()) throw new Exception("Has dynamic shape");
+    if (state.getLightEmission(EmptyBlockGetter.INSTANCE, BlockPos.ZERO) != 0) throw new Exception("Emits light");
+    if (block instanceof CoralBlock) throw new Exception("Is coral block");
+    if (block instanceof LeavesBlock) throw new Exception("Is leaves block");
+    return true;
   }
 
   // Update our locally stored block list
   // Filter out bad block types and assign
   public static void update_block_list() {
     ImagemodClient.LOGGER.info("Loading block color list");
-    image_blocks.clear();
     for (Block block : BuiltInRegistries.BLOCK.stream().toList()) {
-      if (filter_block(block)) {
-        try {
-          BlockColor block_color = get_block_color(block, Direction.NORTH);
-          image_blocks.add(block_color);
-          ImagemodClient.LOGGER.debug(
-            "{} - SUCCESS! (r:{} g:{} b:{} a:{})",
-            block.getName().getString(),
-            block_color.color.red,
-            block_color.color.green,
-            block_color.color.blue,
-            block_color.color.alpha
-          );
-        } catch (Exception e) {
-          ImagemodClient.LOGGER.debug("{} - rejected: {}", block.getName().getString(), e.getMessage());
+      try {
+        if (filter_block(block)) {
+          image_blocks.add(ImageBlock.get(block));
+          ImagemodClient.LOGGER.debug("{} - ACCEPTED", block.getName().getString());
         }
-      } else {
-        ImagemodClient.LOGGER.debug("{} - rejected: filter-block", block.getName().getString());
+      } catch (Exception e) {
+        ImagemodClient.LOGGER.debug("{} - REJECTED: {}", block.getName().getString(), e.getMessage());
       }
     }
     ImagemodClient.LOGGER.info("Block color list loading complete");
+    ImageBlock[] blocks = new ImageBlock[image_blocks.size()];
+    for (int i = 0; i < image_blocks.size(); i++) {
+      blocks[i] = image_blocks.get(i);
+    }
+    image_builder.set_tiles(blocks, 16);
   }
 
   private static int create_execute(
@@ -134,27 +110,31 @@ public class ImageCommand {
     } catch (Exception e) {}
     // Load image
     Path path = PathArgument.get_path(ctx, "src");
-    Image image = null;
-    BufferedImage buffered_image;
+    BufferedImage image = null;
     try {
-      buffered_image = ImageIO.read(path.toFile());
-      if (width_set && height_set) {
-        image = ImageUtil.load(buffered_image, input_width, input_height);
-      } else if (width_set) {
-        image = ImageUtil.load_width(buffered_image, input_width);
-      } else if (height_set) {
-        image = ImageUtil.load_height(buffered_image, input_height);
-      } else {
-        ImagemodClient.LOGGER.error("EROOOOOOORORRR: No width or height set");
-      }
+      image = ImageIO.read(path.toFile());
     } catch (IOException e) {
-      ImagemodClient.LOGGER.error("EROOOOOOORORRR: IOException {}", e.getMessage());
+      throw new SimpleCommandExceptionType(Component.literal("Could not load image")).create();
     }
-    if (image == null) return -1;
+    int w, h;
+    if (width_set && height_set) {
+      w = input_width;
+      h = input_height;
+    } else if (width_set) {
+      w = input_width;
+      h = (int) (input_width * ((double)image.getHeight() / image.getWidth()));
+    } else if (height_set) {
+      h = input_height;
+      w = (int) (input_height * ((double)image.getWidth() / image.getHeight()));
+    } else {
+      throw new SimpleCommandExceptionType(Component.literal("No width or height set")).create();
+    }
     // World in which the command was sent
     CommandSourceStack source = ctx.getSource();
     Entity entity = source.getEntity();
-    if (entity == null) return -1;
+    if (entity == null) {
+      throw new SimpleCommandExceptionType(Component.literal("Source is not an entity")).create();
+    }
     Level level = source.getUnsidedLevel();
     // Get relative directions and positions
     // to entity for placing image blocks at the
@@ -162,25 +142,17 @@ public class ImageCommand {
     Direction direction_view = entity.getDirection();
     Direction direction_right = direction_view.getClockWise();
     BlockPos position = entity.blockPosition().relative(direction_view, 2);
-    final int w = image.width, h = image.height;
     // Create image
-    new BlockImageBuilder(
-      image,
-      ImageCommand.image_blocks,
+    WorldTransform transform = new WorldTransform(
       level,
       position,
       direction_right,
       Direction.UP,
-      (e) -> {
-        source.sendFailure(Component.literal(e.getMessage()));
-      },
-      (transform) -> {
-        source.sendSuccess(() -> Component.literal(String.format("Successfully created (%dx%d) image", w, h)), false);
-        transform.perform_action();
-        ImageCommand.undo_stack.push(transform);
-      }
-    ).run();
-
+      direction_view,
+      image_builder.generate(image, w, h)
+    );
+    ImageCommand.undo_stack.push(transform);
+    transform.perform_transform();
     return 1;
 
   }
@@ -199,7 +171,7 @@ public class ImageCommand {
       return -1;
     }
     WorldTransform action = ImageCommand.undo_stack.pop();;
-    action.revert_action();
+    action.revert_transform();
     ImageCommand.redo_stack.push(action);
     ctx.getSource().sendSuccess(() -> Component.literal("Successfully reverted last image creation"), false);
     return 1;
@@ -212,7 +184,7 @@ public class ImageCommand {
       return -1;
     }
     WorldTransform action = ImageCommand.redo_stack.pop();
-    action.perform_action();
+    action.perform_transform();
     ImageCommand.undo_stack.push(action);
     ctx.getSource().sendSuccess(() -> Component.literal("Successfully recreated image"), false);
     return 1;
