@@ -77,7 +77,7 @@ public class Main {
 
     BufferedImage input_image = null;
     try {
-      input_image = ImageIO.read(Path.of("out/cat.jpeg").toFile());
+      input_image = ImageIO.read(Path.of("out/me2.jpg").toFile());
     } catch (IOException e) {
       System.out.println("Could not read input file");
     }
@@ -87,9 +87,9 @@ public class Main {
     }
 
     final int tile_size = 16;
-    final int block_width = 200;
-    //final int bw = block_width, bh = (int) (block_width * ((double)input_image.getHeight()/input_image.getWidth()));
-    final int bw = (int) (block_width * ((double)input_image.getWidth()/input_image.getHeight())), bh = block_width;
+    final int block_width = 120;
+    final int bw = block_width, bh = (int) (block_width * ((double)input_image.getHeight()/input_image.getWidth()));
+    //final int bw = (int) (block_width * ((double)input_image.getWidth()/input_image.getHeight())), bh = block_width;
     final long pcmps = (long) tile_size * (long) tile_size * (long)bw * (long)bh * (long)tile_images.length;
 
     MosaicGenerator<IntColorVector, BufferedImage, BufferedImage, BufferedImage> mosaic = new MosaicIntColThread();
@@ -104,7 +104,7 @@ public class Main {
     System.out.printf("%fs - %fMpx/s\n", seconds, (((double)pcmps / seconds) / 1000000));
 
     try {
-      ImageIO.write(out, "png", Path.of("out/catout2.png").toFile());
+      ImageIO.write(out, "png", Path.of("out/me2out.png").toFile());
     } catch (Exception e) {
       System.out.println("failed to output image");
     }

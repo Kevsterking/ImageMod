@@ -5,7 +5,7 @@ import java.awt.image.BufferedImage;
 
 public class ImageUtil {
 
-  private static Image format_image(BufferedImage input_image, final int width, final int height) {
+  private static BufferedImage format_image(BufferedImage input_image, final int width, final int height) {
     // Needs reformat
     if (
       input_image.getHeight() != height ||
@@ -21,28 +21,23 @@ public class ImageUtil {
       // Draw the original image onto the new image, scaling it in the process
       g.drawImage(input_image, 0, 0, width, height, null);
       g.dispose();
-      return new Image(formatted);
+      return formatted;
     }
-    return new Image(input_image);
-  }
-
-  // Load image average color
-  public static Color load_color(BufferedImage img) {
-    return format_image(img, 1, 1).get_color(0, 0);
+    return input_image;
   }
 
   // Load image from path and requested width / height
-  public static Image load(BufferedImage img, final int width, final int height) {
+  public static BufferedImage load(BufferedImage img, final int width, final int height) {
     return ImageUtil.format_image(img, width, height);
   }
 
   // Load image from path and requested width - keep aspect
-  public static Image load_width(BufferedImage img, final int width) {
+  public static BufferedImage load_width(BufferedImage img, final int width) {
     return ImageUtil.format_image(img, width, (width * img.getHeight()) / img.getWidth());
   }
 
   // Load image from path and requested height - keep aspect
-  public static Image load_height(BufferedImage img, final int height) {
+  public static BufferedImage load_height(BufferedImage img, final int height) {
     return ImageUtil.format_image(img, (height * img.getWidth()) / img.getHeight(), height);
   }
 
