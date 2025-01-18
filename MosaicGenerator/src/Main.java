@@ -1,4 +1,12 @@
-import Mosaic.MosaicInt.MosaicGeneratorInt;
+
+import Mosaic.IntColorVector;
+import Mosaic.MosaicGenerator;
+import Mosaic.MosaicHistogram.ColorHistogram;
+import Mosaic.MosaicHistogram.MosaicHisto;
+import Mosaic.MosaicInt.MosaicIntColThread;
+import Mosaic.MosaicSIMD.MosaicSIMD;
+import Mosaic.MosaicSIMD.SIMDColorVector;
+import Mosaic.ShortColorVector;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -43,6 +51,10 @@ public class Main {
   }
 
   public static void main(String[] args) {
+
+    byte a = 0;
+    byte b = (byte) 0xff;
+    System.out.println(Byte.compareUnsigned(a, b));
     ArrayList<BufferedImage> tiles = new ArrayList<>();
     File[] tile_images = Path.of("tiles").toFile().listFiles();
     if (tile_images == null) {
@@ -70,18 +82,29 @@ public class Main {
       System.out.println("Could not read input file");
     }
 
-    int w = input_image.getWidth(), h = input_image.getHeight();
-
     for (int i = 0; i < tiles.size(); i++) {
       tile_arr[i] = tiles.get(i);
     }
 
-    MosaicGeneratorInt mosaic = new MosaicGeneratorInt();
-    mosaic.set_tiles(tile_arr, 16);
-    BufferedImage out = mosaic.generate(input_image, (int) (200 * ((double)w/h)), 200);
+    final int tile_size = 16;
+    final int block_width = 200;
+    //final int bw = block_width, bh = (int) (block_width * ((double)input_image.getHeight()/input_image.getWidth()));
+    final int bw = (int) (block_width * ((double)input_image.getWidth()/input_image.getHeight())), bh = block_width;
+    final long pcmps = (long) tile_size * (long) tile_size * (long)bw * (long)bh * (long)tile_images.length;
+
+    MosaicGenerator<IntColorVector, BufferedImage, BufferedImage, BufferedImage> mosaic = new MosaicIntColThread();
+    mosaic.set_tiles(tile_arr, tile_size);
+
+    long end, start = System.currentTimeMillis();
+    BufferedImage out = mosaic.generate(input_image, bw, bh);
+    end = System.currentTimeMillis();
+
+    double seconds = ((double)(end-start) / 1000);
+    System.out.printf("start: %d, end: %d, pcmps: %d\n", start, end, pcmps);
+    System.out.printf("%fs - %fMpx/s\n", seconds, (((double)pcmps / seconds) / 1000000));
 
     try {
-      ImageIO.write(out, "png", Path.of("out/catmosaic_deltaE.png").toFile());
+      ImageIO.write(out, "png", Path.of("out/catout2.png").toFile());
     } catch (Exception e) {
       System.out.println("failed to output image");
     }

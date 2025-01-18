@@ -15,10 +15,10 @@ public class ImageUtil {
       BufferedImage formatted = new BufferedImage(width, height, BufferedImage.TYPE_4BYTE_ABGR);
       Graphics2D g = formatted.createGraphics();
       // Smooths out the transformation
-      g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-      g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
-      g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-      // Draw the original image onto the new image, scaling it in the process
+//      g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+//      g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+//      g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+//      // Draw the original image onto the new image, scaling it in the process
       g.drawImage(input_image, 0, 0, width, height, null);
       g.dispose();
       return formatted;

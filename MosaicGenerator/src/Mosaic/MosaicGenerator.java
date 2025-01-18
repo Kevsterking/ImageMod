@@ -13,6 +13,7 @@ public abstract class MosaicGenerator<TYPE, SRC, TILE, RES> {
   abstract protected TYPE[][] get_source_type(SRC src, final int width, final int height);
   abstract protected TYPE get_tile_type(TILE tile, final int tile_size);
   abstract protected void set_result(RES res, TILE tile, final int x, final int y);
+  abstract protected void generate_tiles(RES res, final int tile_rows, final int tile_cols);
 
   public void set_tiles(TILE[] tiles, final int tile_size) {
     this.tiles = tiles;
@@ -23,14 +24,14 @@ public abstract class MosaicGenerator<TYPE, SRC, TILE, RES> {
     }
   }
 
+  public void generate_at(RES res, final int tile_x, final int tile_y) {
+    this.set_result(res, this.find_best(tile_x, tile_y), tile_x, tile_y);
+  }
+
   public RES generate(SRC src, final int tile_cols, final int tile_rows) {
     RES ret = this.get_empty_result(tile_cols, tile_rows);
     this.source_type = this.get_source_type(src, tile_cols, tile_rows);
-    for (int y = 0; y < tile_rows; y++) {
-      for (int x = 0; x < tile_cols; x++) {
-        this.set_result(ret, this.find_best(x, y), x, y);
-      }
-    }
+    this.generate_tiles(ret, tile_cols, tile_rows);
     return ret;
   }
 
