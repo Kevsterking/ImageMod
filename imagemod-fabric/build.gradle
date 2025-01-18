@@ -44,7 +44,7 @@ dependencies {
 
 	// Add dependency on your core module, implementation (internal use)
 	// api would expose to external use also
-	implementation project(':imagemod-core')
+	//include project(':imagemod-core')
 
 }
 
