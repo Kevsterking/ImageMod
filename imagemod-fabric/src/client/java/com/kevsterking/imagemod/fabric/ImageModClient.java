@@ -6,21 +6,16 @@ import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallba
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ImagemodClient implements ClientModInitializer {
+public class ImageModClient implements ClientModInitializer {
 
 	public static final String MOD_ID = "imagemod";
 	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
 	@Override
 	public void onInitializeClient() {
-
-		LOGGER.info("Initializing");
-
-		// Register commands
+		ImageModClient.LOGGER.info("Initializing...");
 		ClientCommandRegistrationCallback.EVENT.register(ImageCommand::register);
-
-		LOGGER.info("Initialized");
-
+		ImageModClient.LOGGER.info("Initialized.");
 	}
 
 }

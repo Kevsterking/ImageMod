@@ -22,6 +22,8 @@ import java.io.IOException;
 import java.nio.file.NotDirectoryException;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.Stack;
 
 
@@ -31,11 +33,9 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.CoralBlock;
-import net.minecraft.world.level.block.LeavesBlock;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraft.world.level.EmptyBlockGetter;
 import net.minecraft.core.BlockPos;
@@ -51,6 +51,18 @@ public class ImageCommand {
   private static final Stack<WorldTransform> undo_stack = new Stack<>();
   private static final Stack<WorldTransform> redo_stack = new Stack<>();
 
+  private static final Set<Block> block_blacklist = new HashSet<>();
+
+  static {
+    block_blacklist.add(Blocks.CARTOGRAPHY_TABLE);
+    block_blacklist.add(Blocks.DRIED_KELP_BLOCK);
+    block_blacklist.add(Blocks.SCULK_SHRIEKER);
+    block_blacklist.add(Blocks.ICE);
+    block_blacklist.add(Blocks.BLUE_ICE);
+    block_blacklist.add(Blocks.FROSTED_ICE);
+    block_blacklist.add(Blocks.PACKED_ICE);
+  }
+
   // Filter out unwanted blocks based on properties that
   // create unwanted effects
   // true -> keep block, false -> don't use block
@@ -60,8 +72,10 @@ public class ImageCommand {
     if (!Block.isShapeFullBlock(vs)) throw new Exception("Is not full block");
     if (block.hasDynamicShape()) throw new Exception("Has dynamic shape");
     if (state.getLightEmission(EmptyBlockGetter.INSTANCE, BlockPos.ZERO) != 0) throw new Exception("Emits light");
+    if (state.hasProperty(BlockStateProperties.FACING) || state.hasProperty(BlockStateProperties.HORIZONTAL_FACING)) throw new Exception("Directional block");
     if (block instanceof CoralBlock) throw new Exception("Is coral block");
     if (block instanceof LeavesBlock) throw new Exception("Is leaves block");
+    if (block_blacklist.contains(block)) throw new Exception("Is blacklisted");
     return true;
   }
 
@@ -107,6 +121,9 @@ public class ImageCommand {
     try {
       image = ImageIO.read(path.toFile());
     } catch (IOException e) {
+      throw new SimpleCommandExceptionType(Component.literal("Could not load image")).create();
+    }
+    if (image == null) {
       throw new SimpleCommandExceptionType(Component.literal("Could not load image")).create();
     }
     int w, h;

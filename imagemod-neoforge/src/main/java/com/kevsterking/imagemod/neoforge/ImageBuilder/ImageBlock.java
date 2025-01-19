@@ -1,5 +1,6 @@
 package com.kevsterking.imagemod.neoforge.ImageBuilder;
 
+import com.kevsterking.imagemod.neoforge.ImageMod;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.BlockModelShaper;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -8,6 +9,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.neoforged.neoforge.client.model.data.ModelData;
 
 import javax.imageio.ImageIO;
@@ -27,6 +29,7 @@ public class ImageBlock {
     ResourceLocation block_id = sprite.atlasLocation();
     String path = sprite.contents().name().getPath();
     ResourceLocation location = ResourceLocation.fromNamespaceAndPath(block_id.getNamespace(), "textures/" + path + ".png");
+    ImageMod.LOGGER.debug(location.getPath());
     return ImageIO.read(resource_manager.getResource(location).get().open());
   }
 

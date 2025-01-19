@@ -58,7 +58,7 @@ public class PathArgument implements ArgumentType<Path> {
         throw new FileNotFoundException();
     }
     public static Path get_path(String str) throws FileNotFoundException {
-    	return PathArgument.get_path(Paths.get(str));
+    	return PathArgument.get_path(Paths.get(PathArgument.clean_path_string(str)));
     }
     public static Path get_path(final CommandContext<FabricClientCommandSource> context, final String name) {
         return context.getArgument(name, Path.class);
@@ -79,12 +79,16 @@ public class PathArgument implements ArgumentType<Path> {
         }
     }
 
+    private static String clean_path_string(String path) {
+        return path.toString().replace("\\", "/");
+    }
+
     // Get short form string for path given root path of class
     private static String get_formatted_path(Path path) {
         Path p = path.startsWith(PathArgument.root_directory) ?
             PathArgument.root_directory.relativize(path) :
             path;
-        return p.toString().replace("\\", "/") +
+        return PathArgument.clean_path_string(p.toString()) +
             (p.toFile().isDirectory() ? "/" : "");
     }
 

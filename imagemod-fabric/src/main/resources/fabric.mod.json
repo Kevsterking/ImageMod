@@ -12,14 +12,14 @@
 		"sources": "${mod_git_repo}"
 	},
 	"license": "${mod_license}",
-	"icon": "assets/${mod_id}/icon.png",
+	"icon": "icon.png",
 	"environment": "*",
 	"entrypoints": {
 		"main": [
-			"${mod_group}.fabric.Imagemod"
+			"${mod_group}.fabric.ImageMod"
 		],
 		"client": [
-			"${mod_group}.fabric.ImagemodClient"
+			"${mod_group}.fabric.ImageModClient"
 		]
 	},
 	"mixins": [
