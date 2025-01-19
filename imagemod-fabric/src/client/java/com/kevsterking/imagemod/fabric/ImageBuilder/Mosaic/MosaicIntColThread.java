@@ -41,12 +41,11 @@ public class MosaicIntColThread extends MosaicGenerator<IntColorVector, Buffered
   protected long compare(IntColorVector tile, IntColorVector image) {
     long ret = 0;
     for (int i = 0; i < tile.a.length; i+=4) {
-      int da = Math.abs(tile.a[i] - image.a[i]);
-      int db = Math.abs(tile.b[i] - image.b[i]);
-      int dg = Math.abs(tile.g[i] - image.g[i]);
-      int dr = Math.abs(tile.r[i] - image.r[i]);
-      double dc = Math.sqrt(db*db+dg*dg+dr*dr+da*da);
-      ret += (long) (dc * dc);
+      int da = tile.a[i] - image.a[i];
+      int db = tile.b[i] - image.b[i];
+      int dg = tile.g[i] - image.g[i];
+      int dr = tile.r[i] - image.r[i];
+      ret += (long)db*db+(long)dg*dg+(long)dr*dr+(long)da*da;
     }
     return ret;
   }

@@ -1,9 +1,5 @@
 package com.kevsterking.imagemod.fabric.WorldTransformer;
 
-
-import com.kevsterking.imagemod.fabric.ImageModClient;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.world.ClientWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
@@ -17,7 +13,7 @@ public class WorldTransform {
 	private final BlockPos position;
 	private final Direction direction_x, direction_y, direction_z;
 
-	private WorldTransform(
+	protected WorldTransform(
 		World level,
 		BlockPos position,
 		Direction direction_x,
@@ -72,31 +68,6 @@ public class WorldTransform {
 				}
 			}
 		}
-	}
-
-	public static WorldTransform place(
-		WorldStructure structure,
-		ClientWorld world,
-		BlockPos position,
-		Direction direction_x,
-		Direction direction_y,
-		Direction direction_z
-	) throws Exception {
-		ImageModClient.LOGGER.info("In Worldtransform place");
-		MinecraftClient client = MinecraftClient.getInstance();
-		if (client.getServer() != null) {
-			WorldTransform ret = new WorldTransform(
-				client.getServer().getWorld(world.getRegistryKey()),
-				position,
-				direction_x,
-				direction_y,
-				direction_z,
-				structure
-			);
-			ret.perform_transform();
-			return ret;
-		}
-		throw new Exception("multiplayer image creation coming soon...");
 	}
 
 }

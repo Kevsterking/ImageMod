@@ -11,10 +11,13 @@ public class ImageModClient implements ClientModInitializer {
 	public static final String MOD_ID = "imagemod";
 	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
+	public ImageCommand image_command;
+
 	@Override
 	public void onInitializeClient() {
 		ImageModClient.LOGGER.info("Initializing...");
-		ClientCommandRegistrationCallback.EVENT.register(ImageCommand::register);
+		this.image_command = new ImageCommand();
+		ClientCommandRegistrationCallback.EVENT.register(this.image_command::register);
 		ImageModClient.LOGGER.info("Initialized.");
 	}
 
