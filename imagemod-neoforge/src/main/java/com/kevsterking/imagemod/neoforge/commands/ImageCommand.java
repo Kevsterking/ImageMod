@@ -2,7 +2,7 @@ package com.kevsterking.imagemod.neoforge.commands;
 
 import com.kevsterking.imagemod.neoforge.ImageBuilder.*;
 import com.kevsterking.imagemod.neoforge.ImageBuilder.Mosaic.MosaicIntColThread;
-import com.kevsterking.imagemod.neoforge.ImagemodClient;
+import com.kevsterking.imagemod.neoforge.ImageMod;
 import com.kevsterking.imagemod.neoforge.WorldTransformer.WorldTransform;
 import com.kevsterking.imagemod.neoforge.util.DirectoryArgument;
 import com.kevsterking.imagemod.neoforge.util.ImageFileArgument;
@@ -14,7 +14,6 @@ import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
-import net.minecraft.client.Minecraft;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -23,18 +22,14 @@ import java.io.IOException;
 import java.nio.file.NotDirectoryException;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Stack;
 
 
-import net.minecraft.client.renderer.block.BlockModelShaper;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -44,9 +39,7 @@ import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraft.world.level.EmptyBlockGetter;
 import net.minecraft.core.BlockPos;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.core.Direction;
-import net.neoforged.neoforge.client.model.data.ModelData;
 
 public class ImageCommand {
 
@@ -75,18 +68,18 @@ public class ImageCommand {
   // Update our locally stored block list
   // Filter out bad block types and assign
   public static void update_block_list() {
-    ImagemodClient.LOGGER.info("Loading block color list");
+    ImageMod.LOGGER.info("Loading block list");
     for (Block block : BuiltInRegistries.BLOCK.stream().toList()) {
       try {
         if (filter_block(block)) {
           image_blocks.add(ImageBlock.get(block));
-          ImagemodClient.LOGGER.debug("{} - ACCEPTED", block.getName().getString());
+          ImageMod.LOGGER.debug("{} - ACCEPTED", block.getName().getString());
         }
       } catch (Exception e) {
-        ImagemodClient.LOGGER.debug("{} - REJECTED: {}", block.getName().getString(), e.getMessage());
+        ImageMod.LOGGER.debug("{} - REJECTED: {}", block.getName().getString(), e.getMessage());
       }
     }
-    ImagemodClient.LOGGER.info("Block color list loading complete");
+    ImageMod.LOGGER.info("Block list loading complete.");
     ImageBlock[] blocks = new ImageBlock[image_blocks.size()];
     for (int i = 0; i < image_blocks.size(); i++) {
       blocks[i] = image_blocks.get(i);
@@ -135,7 +128,7 @@ public class ImageCommand {
     if (entity == null) {
       throw new SimpleCommandExceptionType(Component.literal("Source is not an entity")).create();
     }
-    Level level = source.getUnsidedLevel();
+    ServerLevel level = source.getLevel();
     // Get relative directions and positions
     // to entity for placing image blocks at the
     // right place
@@ -210,7 +203,7 @@ public class ImageCommand {
   // Register command structure
   public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
 
-    ImagemodClient.LOGGER.info("Registering Commands");
+    ImageMod.LOGGER.info("Registering Commands");
 
     // update block list when we are registering command
     ImageCommand.update_block_list();
@@ -257,7 +250,7 @@ public class ImageCommand {
     root.then(createLiteral).then(setDirectoryLiteral).then(reload).then(undoLiteral).then(redoLiteral);
     dispatcher.register(root);
 
-    ImagemodClient.LOGGER.info("Commands Registered");
+    ImageMod.LOGGER.info("Commands Registered");
 
   }
 

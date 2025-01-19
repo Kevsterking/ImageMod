@@ -2,6 +2,7 @@ package com.kevsterking.imagemod.neoforge.WorldTransformer;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 
@@ -10,12 +11,12 @@ public class WorldTransform {
 	private final WorldStructure previous_structure;
 	private final WorldStructure structure;
 
-	private final Level level;
+	private final ServerLevel level;
 	private final BlockPos position;
 	private final Direction direction_x, direction_y, direction_z;
 
 	public WorldTransform(
-		Level level,
+		ServerLevel level,
 		BlockPos position,
 		Direction direction_x,
 		Direction direction_y,
@@ -65,7 +66,7 @@ public class WorldTransform {
 						.relative(this.direction_y, y)
 						.relative(this.direction_z, z);
 					if (structure.structure[x][y][z] == null) continue;
-					this.level.setBlock(pos, structure.structure[x][y][z], 0);
+					this.level.setBlockAndUpdate(pos, structure.structure[x][y][z]);
 				}
 			}
 		}

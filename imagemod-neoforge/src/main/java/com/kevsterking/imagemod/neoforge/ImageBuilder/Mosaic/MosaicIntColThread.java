@@ -2,9 +2,8 @@ package com.kevsterking.imagemod.neoforge.ImageBuilder.Mosaic;
 
 import com.kevsterking.imagemod.neoforge.ImageBuilder.ImageBlock;
 import com.kevsterking.imagemod.neoforge.ImageBuilder.ImageUtil;
-import com.kevsterking.imagemod.neoforge.ImagemodClient;
+import com.kevsterking.imagemod.neoforge.ImageMod;
 import com.kevsterking.imagemod.neoforge.WorldTransformer.WorldStructure;
-import com.kevsterking.imagemod.neoforge.commands.ImageCommand;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -34,7 +33,7 @@ public class MosaicIntColThread extends MosaicGenerator<IntColorVector, Buffered
       try {
         worker[y].join();
       } catch(InterruptedException e) {
-        ImagemodClient.LOGGER.error("Failed to join threads: {}", e.getMessage());
+        ImageMod.LOGGER.error("Failed to join threads: {}", e.getMessage());
       }
     }
   }
