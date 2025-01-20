@@ -18,7 +18,6 @@ public class ImageModClient implements ClientModInitializer {
 		ImageModClient.LOGGER.info("Initializing...");
 		this.image_command = new ImageCommand();
 		ClientCommandRegistrationCallback.EVENT.register(this.image_command::register);
-		ImageModClient.LOGGER.info("Initialized.");
 	}
 
 }

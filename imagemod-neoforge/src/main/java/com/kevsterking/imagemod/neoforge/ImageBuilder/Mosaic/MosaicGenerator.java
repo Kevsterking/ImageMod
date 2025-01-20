@@ -1,5 +1,7 @@
 package com.kevsterking.imagemod.neoforge.ImageBuilder.Mosaic;
 
+import java.util.function.Function;
+
 public abstract class MosaicGenerator<TYPE, SRC, TILE, RES> {
 
   protected TILE[] tiles;
@@ -24,10 +26,6 @@ public abstract class MosaicGenerator<TYPE, SRC, TILE, RES> {
     }
   }
 
-  public void generate_at(RES res, final int tile_x, final int tile_y) {
-    this.set_result(res, this.find_best(tile_x, tile_y), tile_x, tile_y);
-  }
-
   public RES generate(SRC src, final int tile_cols, final int tile_rows) {
     RES ret = this.get_empty_result(tile_cols, tile_rows);
     this.tile_cols = tile_cols;
@@ -35,6 +33,18 @@ public abstract class MosaicGenerator<TYPE, SRC, TILE, RES> {
     this.source_type = this.get_source_type(src, tile_cols, tile_rows);
     this.generate_tiles(ret, tile_cols, tile_rows);
     return ret;
+  }
+
+  public void generate_async(
+    SRC src,
+    final int tile_cols, final int tile_rows,
+    Function<RES,Void> callback
+  ) {
+    new MosaicGeneratorWorker<TYPE, SRC, TILE, RES>(this).generate(src, tile_cols, tile_rows, callback);
+  }
+
+  protected void generate_at(RES res, final int tile_x, final int tile_y) {
+    this.set_result(res, this.find_best(tile_x, tile_y), tile_x, tile_y);
   }
 
   private TILE find_best(final int tile_x, final int tile_y) {

@@ -1,6 +1,5 @@
 package com.kevsterking.imagemod.neoforge.ImageBuilder.Mosaic;
 
-
 import com.kevsterking.imagemod.neoforge.WorldTransformer.WorldStructure;
 
 public class MosaicIntColThreadWorker extends Thread {

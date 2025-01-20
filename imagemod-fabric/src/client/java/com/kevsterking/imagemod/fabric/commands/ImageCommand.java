@@ -50,10 +50,10 @@ public class ImageCommand {
       try {
         if (ImageBlock.filter_block(block)) {
           this.image_blocks.add(ImageBlock.get(block));
-          ImageModClient.LOGGER.info("{} - ACCEPTED", block.getName().getString());
+          ImageModClient.LOGGER.debug("{} - ACCEPTED", block.getName().getString());
         }
       } catch (Exception e) {
-        ImageModClient.LOGGER.info("{} - REJECTED: {}", block.getName().getString(), e.getMessage());
+        ImageModClient.LOGGER.debug("{} - REJECTED: {}", block.getName().getString(), e.getMessage());
       }
     }
     this.image_blocks.add(ImageBlock.get_air());

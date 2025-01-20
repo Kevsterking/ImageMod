@@ -1,9 +1,10 @@
 package com.kevsterking.imagemod.neoforge.commands;
 
-import com.kevsterking.imagemod.neoforge.ImageBuilder.*;
+import com.kevsterking.imagemod.neoforge.ImageBuilder.ImageBlock;
 import com.kevsterking.imagemod.neoforge.ImageBuilder.Mosaic.MosaicIntColThread;
-import com.kevsterking.imagemod.neoforge.ImageMod;
-import com.kevsterking.imagemod.neoforge.WorldTransformer.WorldTransform;
+import com.kevsterking.imagemod.neoforge.ImageModClient;
+import com.kevsterking.imagemod.neoforge.WorldTransformer.WorldStructure;
+import com.kevsterking.imagemod.neoforge.WorldTransformer.WorldTransformer;
 import com.kevsterking.imagemod.neoforge.util.DirectoryArgument;
 import com.kevsterking.imagemod.neoforge.util.ImageFileArgument;
 import com.kevsterking.imagemod.neoforge.util.PathArgument;
@@ -14,6 +15,21 @@ import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.neoforged.neoforge.client.ClientCommandSourceStack;
+import net.neoforged.neoforge.registries.NeoForgeRegistries;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -22,109 +38,78 @@ import java.io.IOException;
 import java.nio.file.NotDirectoryException;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.Stack;
-
-
-import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.commands.Commands;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.network.chat.Component;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.level.block.*;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.minecraft.world.phys.shapes.VoxelShape;
-import net.minecraft.world.level.EmptyBlockGetter;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 
 public class ImageCommand {
 
-  private static final PathArgument src_arg = new ImageFileArgument();
-  private static final PathArgument dir_arg = new DirectoryArgument();
-  private static final MosaicIntColThread image_builder = new MosaicIntColThread();
+  private final PathArgument image_argument = new ImageFileArgument();
+  private final PathArgument directory_argument = new DirectoryArgument();
 
-  private static final ArrayList<ImageBlock> image_blocks = new ArrayList<>();
-  private static final Stack<WorldTransform> undo_stack = new Stack<>();
-  private static final Stack<WorldTransform> redo_stack = new Stack<>();
+  private final ArrayList<ImageBlock> image_blocks = new ArrayList<>();
+  private final MosaicIntColThread image_builder = new MosaicIntColThread();
+  private WorldTransformer world_transformer;
 
-  private static final Set<Block> block_blacklist = new HashSet<>();
-
-  static {
-    block_blacklist.add(Blocks.CARTOGRAPHY_TABLE);
-    block_blacklist.add(Blocks.DRIED_KELP_BLOCK);
-    block_blacklist.add(Blocks.SCULK_SHRIEKER);
-    block_blacklist.add(Blocks.ICE);
-    block_blacklist.add(Blocks.BLUE_ICE);
-    block_blacklist.add(Blocks.FROSTED_ICE);
-    block_blacklist.add(Blocks.PACKED_ICE);
-  }
-
-  // Filter out unwanted blocks based on properties that
-  // create unwanted effects
-  // true -> keep block, false -> don't use block
-  private static boolean filter_block(Block block) throws Exception {
-    BlockState state = block.defaultBlockState();
-    VoxelShape vs = state.getShape(EmptyBlockGetter.INSTANCE, BlockPos.ZERO);
-    if (!Block.isShapeFullBlock(vs)) throw new Exception("Is not full block");
-    if (block.hasDynamicShape()) throw new Exception("Has dynamic shape");
-    if (state.getLightEmission(EmptyBlockGetter.INSTANCE, BlockPos.ZERO) != 0) throw new Exception("Emits light");
-    if (state.hasProperty(BlockStateProperties.FACING) || state.hasProperty(BlockStateProperties.HORIZONTAL_FACING)) throw new Exception("Directional block");
-    if (block instanceof CoralBlock) throw new Exception("Is coral block");
-    if (block instanceof LeavesBlock) throw new Exception("Is leaves block");
-    if (block_blacklist.contains(block)) throw new Exception("Is blacklisted");
-    return true;
-  }
-
-  // Update our locally stored block list
-  // Filter out bad block types and assign
-  public static void update_block_list() {
-    ImageMod.LOGGER.info("Loading block list");
+  // Update block list
+  public void update_block_list() {
+    ImageModClient.LOGGER.info("Loading block list");
     for (Block block : BuiltInRegistries.BLOCK.stream().toList()) {
       try {
-        if (filter_block(block)) {
-          image_blocks.add(ImageBlock.get(block));
-          ImageMod.LOGGER.debug("{} - ACCEPTED", block.getName().getString());
+        if (ImageBlock.filter_block(block)) {
+          this.image_blocks.add(ImageBlock.get(block));
+          ImageModClient.LOGGER.debug("{} - ACCEPTED", block.getName().getString());
         }
       } catch (Exception e) {
-        ImageMod.LOGGER.debug("{} - REJECTED: {}", block.getName().getString(), e.getMessage());
+        ImageModClient.LOGGER.debug("{} - REJECTED: {}", block.getName().getString(), e.getMessage());
       }
     }
-    ImageMod.LOGGER.info("Block list loading complete.");
-    ImageBlock[] blocks = new ImageBlock[image_blocks.size()];
-    for (int i = 0; i < image_blocks.size(); i++) {
-      blocks[i] = image_blocks.get(i);
+    this.image_blocks.add(ImageBlock.get_air());
+    ImageBlock[] blocks = new ImageBlock[this.image_blocks.size()];
+    for (int i = 0; i < this.image_blocks.size(); i++) {
+      blocks[i] = this.image_blocks.get(i);
     }
-    image_builder.set_tiles(blocks, 16);
+    this.image_builder.set_tiles(blocks, 16);
+    ImageModClient.LOGGER.info("Block list loading complete.");
   }
 
-  private static int create_execute(
+  private int create_execute(
     CommandContext<CommandSourceStack> ctx
   ) throws CommandSyntaxException {
+    // World in which the command was sent
+    Minecraft client = Minecraft.getInstance();
+		CommandSourceStack source = ctx.getSource();
+    if (client.getSingleplayerServer() == null) {
+      source.sendFailure(Component.literal("Failed: Multiplayer image creation coming soon..."));
+      return 0;
+    }
+    Level level = source.getUnsidedLevel();
+    Entity entity = source.getEntity();
+    if (entity == null) {
+      source.sendFailure(Component.literal("Failed: Source is not an entity"));
+      return 0;
+    }
+    Direction direction_view = entity.getDirection();
+    Direction direction_right = direction_view.getClockWise();
+    BlockPos position = entity.blockPosition().relative(direction_view, 2);
     // Load arguments
     int input_width = 0, input_height = 0;
     boolean width_set = false, height_set = false;
     try {
       input_width = IntegerArgumentType.getInteger(ctx, "width");
       width_set = true;
-    } catch (Exception e) {}
+    } catch (Exception ignored) {}
     try {
       input_height = IntegerArgumentType.getInteger(ctx, "height");
       height_set = true;
-    } catch (Exception e) {}
+    } catch (Exception ignored){}
     // Load image
-    Path path = PathArgument.get_path(ctx, "src");
+    Path path = this.image_argument.get_path(ctx, "src");
     BufferedImage image = null;
     try {
       image = ImageIO.read(path.toFile());
     } catch (IOException e) {
-      throw new SimpleCommandExceptionType(Component.literal("Could not load image")).create();
+      throw new SimpleCommandExceptionType(Component.literal("Failed: Could not load image.")).create();
     }
     if (image == null) {
-      throw new SimpleCommandExceptionType(Component.literal("Could not load image")).create();
+      throw new SimpleCommandExceptionType(Component.literal("Failed: Could not load image.")).create();
     }
     int w, h;
     if (width_set && height_set) {
@@ -137,93 +122,89 @@ public class ImageCommand {
       h = input_height;
       w = (int) (input_height * ((double)image.getWidth() / image.getHeight()));
     } else {
-      throw new SimpleCommandExceptionType(Component.literal("No width or height set")).create();
+      throw new SimpleCommandExceptionType(Component.literal("Failed: No width or height set.")).create();
     }
-    // World in which the command was sent
-    CommandSourceStack source = ctx.getSource();
-    Entity entity = source.getEntity();
-    if (entity == null) {
-      throw new SimpleCommandExceptionType(Component.literal("Source is not an entity")).create();
-    }
-    ServerLevel level = source.getLevel();
-    // Get relative directions and positions
-    // to entity for placing image blocks at the
-    // right place
-    Direction direction_view = entity.getDirection();
-    Direction direction_right = direction_view.getClockWise();
-    BlockPos position = entity.blockPosition().relative(direction_view, 2);
     // Create image
-    WorldTransform transform = new WorldTransform(
-      level,
-      position,
-      direction_right,
-      Direction.UP,
-      direction_view,
-      image_builder.generate(image, w, h)
-    );
-    ImageCommand.undo_stack.push(transform);
-    transform.perform_transform();
+    image_builder.generate_async(image, w, h, (WorldStructure structure) -> {
+      try {
+        world_transformer.place_async(
+          level,
+          structure,
+          position,
+          direction_right,
+          Direction.UP,
+          direction_view,
+          (Void v) -> {
+            source.sendSuccess(() -> Component.literal(String.format("Successfully created %dx%d image", w, h)), false);
+            return null;
+          }
+        );
+      } catch (Exception e) {
+        source.sendFailure(Component.literal("Failed: " + e.getMessage()));
+        return null;
+      }
+      return null;
+    });
     return 1;
-
   }
 
   // Reload block list
-  private static int reload_execute(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
-    ImageCommand.update_block_list();
+  private int reload_execute(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+    this.update_block_list();
     ctx.getSource().sendSuccess(() -> Component.literal("Reloaded block list"), false);
     return 1;
   }
 
   // Undo an image create
-  private static int undo_execute(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
-    if (ImageCommand.undo_stack.empty()) {
-      ctx.getSource().sendFailure(Component.literal("Undo stack is empty"));
-      return -1;
-    }
-    WorldTransform action = ImageCommand.undo_stack.pop();;
-    action.revert_transform();
-    ImageCommand.redo_stack.push(action);
-    ctx.getSource().sendSuccess(() -> Component.literal("Successfully reverted last image creation"), false);
+  private int undo_execute(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+    world_transformer.undo_async((Exception e) -> {
+      if (e != null) {
+        ctx.getSource().sendFailure(Component.literal("Failed: " + e.getMessage()));
+        return null;
+      }
+      ctx.getSource().sendSuccess(() -> Component.literal("Successfully reverted last WorldTransform"), false);
+      return null;
+    });
     return 1;
   }
 
   // Redo an undone image create
-  private static int redo_execute(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
-    if (ImageCommand.redo_stack.empty()) {
-      ctx.getSource().sendFailure(Component.literal("Redo stack is empty"));
-      return -1;
-    }
-    WorldTransform action = ImageCommand.redo_stack.pop();
-    action.perform_transform();
-    ImageCommand.undo_stack.push(action);
-    ctx.getSource().sendSuccess(() -> Component.literal("Successfully recreated image"), false);
+  private int redo_execute(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+    this.world_transformer.redo_async((Exception e) -> {
+      if (e != null) {
+        ctx.getSource().sendFailure(Component.literal("Failed: " + e.getMessage()));
+        return null;
+      }
+      ctx.getSource().sendSuccess(() -> Component.literal("Successful redo of last undone WorldTransform"), false);
+      return null;
+    });
     return 1;
   }
 
   // Set the directory where the image create command looks for image files
-  private static int set_directory_execute(
-          CommandContext<CommandSourceStack> ctx
-  ) {
-    Path dir = DirectoryArgument.get_path(ctx, "dir");
+  private int set_directory_execute(CommandContext<CommandSourceStack> ctx) {
+    Path dir = this.directory_argument.get_path(ctx, "dir");
     try {
-      PathArgument.set_root_directory(String.valueOf(dir));
-      ctx.getSource().sendSuccess(() -> Component.literal("Successfully set image directory to \"" + dir.toString() + "\""), false);
+      this.image_argument.set_root_directory(dir.toString());
+      ctx.getSource().sendSuccess(() -> Component.literal("Successfully set image directory to \"" + dir + "\""), false);
       return 1;
     } catch (NotDirectoryException e) {
       ctx.getSource().sendFailure(Component.literal("Provided path is not a directory"));
     } catch (FileNotFoundException e) {
       ctx.getSource().sendFailure(Component.literal("Provided path could not be found"));
     }
-    return -1;
+    return 0;
   }
 
   // Register command structure
-  public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
+  public void register(CommandDispatcher<CommandSourceStack> ctx) {
 
-    ImageMod.LOGGER.info("Registering Commands");
+    ImageModClient.LOGGER.info("Registering Commands...");
+
+    this.world_transformer = new WorldTransformer();
 
     // update block list when we are registering command
-    ImageCommand.update_block_list();
+    this.update_block_list();
 
     // image command
     LiteralArgumentBuilder<CommandSourceStack> root = Commands.literal("image");
@@ -235,11 +216,11 @@ public class ImageCommand {
     LiteralArgumentBuilder<CommandSourceStack> hLiteral  	= Commands.literal("-height");
     LiteralArgumentBuilder<CommandSourceStack> whInfoLiteral = Commands.literal("~ ~");
 
-    RequiredArgumentBuilder<CommandSourceStack, Path> srcArgument = Commands.argument("src", src_arg);
+    RequiredArgumentBuilder<CommandSourceStack, Path> srcArgument = Commands.argument("src", image_argument);
 
     RequiredArgumentBuilder<CommandSourceStack, Integer> wArgument      = Commands.argument("width", IntegerArgumentType.integer());
-    RequiredArgumentBuilder<CommandSourceStack, Integer> wArgumentFinal = Commands.argument("width", IntegerArgumentType.integer()).executes(ImageCommand::create_execute);
-    RequiredArgumentBuilder<CommandSourceStack, Integer> hArgumentFinal = Commands.argument("height", IntegerArgumentType.integer()).executes(ImageCommand::create_execute);
+    RequiredArgumentBuilder<CommandSourceStack, Integer> wArgumentFinal = Commands.argument("width", IntegerArgumentType.integer()).executes(this::create_execute);
+    RequiredArgumentBuilder<CommandSourceStack, Integer> hArgumentFinal = Commands.argument("height", IntegerArgumentType.integer()).executes(this::create_execute);
 
     wLiteral.then(wArgumentFinal);
     hLiteral.then(hArgumentFinal);
@@ -249,26 +230,27 @@ public class ImageCommand {
     createLiteral.then(srcArgument);
 
     // Reload option
-    LiteralArgumentBuilder<CommandSourceStack> reload = Commands.literal("reload").executes(ImageCommand::reload_execute);
+    LiteralArgumentBuilder<CommandSourceStack> reload = Commands.literal("reload").executes(this::reload_execute);
 
     // Undo
-    LiteralArgumentBuilder<CommandSourceStack> undoLiteral = Commands.literal("undo").executes(ImageCommand::undo_execute);
+    LiteralArgumentBuilder<CommandSourceStack> undoLiteral = Commands.literal("undo").executes(this::undo_execute);
 
     // Redo
-    LiteralArgumentBuilder<CommandSourceStack> redoLiteral = Commands.literal("redo").executes(ImageCommand::redo_execute);;
+    LiteralArgumentBuilder<CommandSourceStack> redoLiteral = Commands.literal("redo").executes(this::redo_execute);;
 
     // SetDirectory
     LiteralArgumentBuilder<CommandSourceStack> setDirectoryLiteral = Commands.literal("setDirectory");
-    RequiredArgumentBuilder<CommandSourceStack, Path> directoryArgument  = Commands.argument("dir", dir_arg).executes(ImageCommand::set_directory_execute);
+    RequiredArgumentBuilder<CommandSourceStack, Path> directoryArgument  = Commands.argument("dir", directory_argument).executes(this::set_directory_execute);
 
     setDirectoryLiteral.then(directoryArgument);
 
     // Root relations
     root.then(createLiteral).then(setDirectoryLiteral).then(reload).then(undoLiteral).then(redoLiteral);
-    dispatcher.register(root);
+    ctx.register(root);
 
-    ImageMod.LOGGER.info("Commands Registered");
+    ImageModClient.LOGGER.info("Commands Registered.");
 
   }
+
 
 }

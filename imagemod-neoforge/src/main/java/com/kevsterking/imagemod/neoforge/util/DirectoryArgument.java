@@ -24,13 +24,10 @@ public class DirectoryArgument extends PathArgument {
 
     @Override
     public Path parse(StringReader reader) throws CommandSyntaxException {
-
         Path ret = super.parse(reader);
-
         if (!ret.toFile().isDirectory()) {
             throw DirectoryArgument.NOT_DIRECTORY.createWithContext(reader);
         }
-
         return ret;
     }
 

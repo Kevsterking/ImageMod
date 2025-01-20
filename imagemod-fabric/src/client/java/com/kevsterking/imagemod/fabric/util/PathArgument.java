@@ -29,7 +29,7 @@ public class PathArgument implements ArgumentType<Path> {
   );
   private static final SimpleCommandExceptionType PATH_NOT_FOUND = new SimpleCommandExceptionType(new LiteralMessage("Path not found"));
 
-  public Path root_directory = get_default_path();
+  public static Path root_directory = get_default_path();
 
   public static String clean_path_string(String path) {
     return path.replace("\\", "/");
@@ -52,7 +52,7 @@ public class PathArgument implements ArgumentType<Path> {
 
   // Get a path that fails with exception if it does not exist
   public Path get_path(Path path) throws FileNotFoundException {
-    Path ret = this.root_directory != null ? this.root_directory.resolve(path) : path;
+    Path ret = PathArgument.root_directory != null ? PathArgument.root_directory.resolve(path) : path;
     if (ret.toFile().exists()) return ret;
     if (path.toFile().exists()) return path;
     throw new FileNotFoundException();
@@ -66,7 +66,7 @@ public class PathArgument implements ArgumentType<Path> {
 
   // Set the root directory
   public void set_root_directory(String path) throws NotDirectoryException, FileNotFoundException {
-    this.root_directory = get_directory(path);
+    PathArgument.root_directory = this.get_directory(path);
   }
 
   // Get the path for file given input
@@ -81,11 +81,11 @@ public class PathArgument implements ArgumentType<Path> {
 
   // Get short form string for path given root path of class
   private String get_formatted_path(Path path) {
-    Path p = path.startsWith(this.root_directory) ?
-            this.root_directory.relativize(path) :
-            path;
+    Path p = path.startsWith(PathArgument.root_directory) ?
+      PathArgument.root_directory.relativize(path) :
+      path;
     return PathArgument.clean_path_string(p.toString()) +
-            (p.toFile().isDirectory() ? "/" : "");
+      (path.toFile().isDirectory() ? "/" : "");
   }
 
   // Filter unwanted path suggestions

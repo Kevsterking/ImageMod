@@ -3,8 +3,8 @@ package com.kevsterking.imagemod.neoforge.WorldTransformer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.state.BlockState;
+
+import java.util.logging.Level;
 
 public class WorldTransform {
 
@@ -15,7 +15,7 @@ public class WorldTransform {
 	private final BlockPos position;
 	private final Direction direction_x, direction_y, direction_z;
 
-	public WorldTransform(
+	protected WorldTransform(
 		ServerLevel level,
 		BlockPos position,
 		Direction direction_x,

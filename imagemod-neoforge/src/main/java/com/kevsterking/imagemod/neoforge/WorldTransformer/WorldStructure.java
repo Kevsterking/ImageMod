@@ -1,5 +1,6 @@
 package com.kevsterking.imagemod.neoforge.WorldTransformer;
 
+
 import net.minecraft.world.level.block.state.BlockState;
 
 public class WorldStructure {
