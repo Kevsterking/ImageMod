@@ -4,8 +4,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 
-import java.util.logging.Level;
-
 public class WorldTransform {
 
 	private final WorldStructure previous_structure;

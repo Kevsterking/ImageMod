@@ -3,7 +3,7 @@ package com.kevsterking.imagemod.fabric.ImageBuilder;
 import com.kevsterking.imagemod.fabric.ImageModClient;
 import net.minecraft.block.*;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.render.model.BakedModel;
+import net.minecraft.client.render.model.BlockStateModel;
 import net.minecraft.client.texture.Sprite;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.state.property.Properties;
@@ -72,8 +72,8 @@ public class ImageBlock {
     // Black magic, don't question it
     MinecraftClient client = MinecraftClient.getInstance();
     ResourceManager resource_manager = client.getResourceManager();
-    BakedModel model = client.getBakedModelManager().getBlockModels().getModel(state);
-    Sprite sprite = model.getParticleSprite();
+    BlockStateModel model = client.getBakedModelManager().getBlockModels().getModel(state);
+    Sprite sprite = model.particleSprite();
     Identifier block_id = sprite.getAtlasId();
     String path = sprite.getContents().getId().getPath();
     Identifier location = Identifier.of(block_id.getNamespace(), "textures/" + path + ".png");

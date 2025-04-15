@@ -5,9 +5,9 @@ import com.kevsterking.imagemod.neoforge.ImageModClient;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.BlockModelShaper;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.level.EmptyBlockGetter;
 import net.minecraft.world.level.block.Block;
@@ -17,12 +17,12 @@ import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.neoforged.neoforge.client.model.data.ModelData;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 
 public class ImageBlock {
@@ -76,13 +76,17 @@ public class ImageBlock {
   private static BufferedImage get_texture(BlockState state) throws IOException {
     // Black magic, don't question it
     ResourceManager resource_manager = Minecraft.getInstance().getResourceManager();
-    ModelResourceLocation mrl = BlockModelShaper.stateToModelLocation(state);
-    TextureAtlasSprite sprite = Minecraft.getInstance().getModelManager().getModel(mrl).getParticleIcon(ModelData.EMPTY);
+    BlockModelShaper bms = Minecraft.getInstance().getModelManager().getBlockModelShaper();
+    assert Minecraft.getInstance().level != null;
+    TextureAtlasSprite sprite = bms.getParticleIcon(state, Minecraft.getInstance().level, BlockPos.ZERO);
     ResourceLocation block_id = sprite.atlasLocation();
     String path = sprite.contents().name().getPath();
     ResourceLocation location = ResourceLocation.fromNamespaceAndPath(block_id.getNamespace(), "textures/" + path + ".png");
+    Optional<Resource> resource = resource_manager.getResource(location);
     ImageModClient.LOGGER.debug(location.getPath());
-    return ImageIO.read(resource_manager.getResource(location).get().open());
+    if (resource.isPresent()) {
+      return ImageIO.read(resource_manager.getResource(location).get().open());
+    } else throw new IOException("Resource is not present");
   }
 
 }
