@@ -2,14 +2,10 @@ plugins {
     id 'java'
 }
 
-group 'com.kevsterking.imagemod.core'
-version "${mod_version}"
+group = 'com.kevsterking.imagemod.core'
+version = "${mod_version}"
 
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(java_version)
-    }
-}
+java.toolchain.languageVersion = JavaLanguageVersion.of(java_version)
 
 repositories {
     mavenCentral()
