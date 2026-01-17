@@ -1,26 +1,27 @@
 package com.kevsterking.imagemod.fabric.WorldTransformer;
 
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.world.level.Level;
 
 public class WorldTransform {
 
 	private final WorldStructure previous_structure;
 	private final WorldStructure structure;
 
-	private final World level;
+	private final Level level;
 	private final BlockPos position;
 	private final Direction direction_x, direction_y, direction_z;
 
 	protected WorldTransform(
-		World level,
+		Level level,
 		BlockPos position,
 		Direction direction_x,
 		Direction direction_y,
 		Direction direction_z,
 		WorldStructure structure
 	) {
+
 		this.level = level;
 		this.position = position;
 		this.direction_x = direction_x;
@@ -37,9 +38,9 @@ public class WorldTransform {
 			for (int y = 0; y < this.structure.height; y++) {
 				for (int z = 0; z < this.structure.depth; z++) {
 					BlockPos pos = this.position
-						.offset(this.direction_x, x)
-						.offset(this.direction_y, y)
-						.offset(this.direction_z, z);
+						.relative(this.direction_x, x)
+						.relative(this.direction_y, y)
+						.relative(this.direction_z, z);
 					ret.structure[x][y][z] = this.level.getBlockState(pos);
 				}
 			}
@@ -60,11 +61,11 @@ public class WorldTransform {
 			for (int y = 0; y < structure.height; y++) {
 				for (int z = 0; z < structure.depth; z++) {
 					BlockPos pos = this.position
-						.offset(this.direction_x, x)
-						.offset(this.direction_y, y)
-						.offset(this.direction_z, z);
+						.relative(this.direction_x, x)
+						.relative(this.direction_y, y)
+						.relative(this.direction_z, z);
 					if (structure.structure[x][y][z] == null) continue;
-					this.level.setBlockState(pos, structure.structure[x][y][z]);
+					this.level.setBlockAndUpdate(pos, structure.structure[x][y][z]);
 				}
 			}
 		}

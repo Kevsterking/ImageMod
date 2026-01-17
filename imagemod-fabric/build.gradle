@@ -1,5 +1,5 @@
 plugins {
-	id 'fabric-loom' version "1.10-SNAPSHOT"
+	id 'net.fabricmc.fabric-loom-remap' version "${fabric_loom_version}"
 	id 'maven-publish'
 }
 
@@ -21,35 +21,24 @@ repositories {
 loom {
 	splitEnvironmentSourceSets()
 	mods {
-		"imagemod" {
+		"${project.mod_id}" {
 			sourceSet sourceSets.main
 			sourceSet sourceSets.client
-			dependencies {
-				modImplementation "net.fabricmc.fabric-api:fabric-command-api-v2:+"
-			}
 		}
 	}
-
 }
 
 dependencies {
-
 	// To change the versions see the gradle.properties file
-	minecraft "com.mojang:minecraft:${fabric_minecraft_version}"
-	mappings "net.fabricmc:yarn:${project.fabric_yarn_mappings}:v2"
+	minecraft "com.mojang:minecraft:${project.fabric_minecraft_version}"
+	mappings loom.officialMojangMappings()
 	modImplementation "net.fabricmc:fabric-loader:${project.fabric_loader_version}"
-
 	// Fabric API. This is technically optional, but you probably want it anyway.
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
-
-	// Add dependency on your core module, implementation (internal use)
-	// api would expose to external use also
-	//include project(':imagemod-core')
-
 }
 
 processResources {
-
+	inputs.property "version", project.version
 	filesMatching("fabric.mod.json") {
 		expand(
 			"java_version": java_version,
@@ -82,8 +71,9 @@ java {
 }
 
 jar {
+	inputs.property "archivesName", project.base.archivesName
 	from("LICENSE") {
-		rename { "${it}_${project.base.archivesName.get()}"}
+		rename { "${it}_${inputs.properties.archivesName}"}
 	}
 }
 
@@ -95,7 +85,6 @@ publishing {
 			from components.java
 		}
 	}
-
 	// See https://docs.gradle.org/current/userguide/publishing_maven.html for information on how to set up publishing.
 	repositories {
 		// Add repositories to publish to here.

@@ -1,10 +1,10 @@
 package com.kevsterking.imagemod.fabric.WorldTransformer;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.world.ClientWorld;
-import net.minecraft.server.integrated.IntegratedServer;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.server.IntegratedServer;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 
 import java.util.Stack;
 import java.util.function.Function;
@@ -16,7 +16,7 @@ public class WorldTransformer {
   private final IntegratedServer server;
 
   public WorldTransformer() {
-    this.server = MinecraftClient.getInstance().getServer();
+    this.server = Minecraft.getInstance().getSingleplayerServer();
   }
 
   public void undo() throws Exception {
@@ -56,7 +56,7 @@ public class WorldTransformer {
   }
 
   public void place_async(
-		ClientWorld world,
+		ClientLevel world,
     WorldStructure structure,
 		BlockPos position,
 		Direction direction_x,
@@ -66,7 +66,7 @@ public class WorldTransformer {
 	) throws Exception {
     if (this.server == null) throw new Exception("Multiplayer support comming soon...");
     WorldTransform ret = new WorldTransform(
-      this.server.getWorld(world.getRegistryKey()),
+      this.server.getLevel(world.dimension()),
       position,
       direction_x,
       direction_y,

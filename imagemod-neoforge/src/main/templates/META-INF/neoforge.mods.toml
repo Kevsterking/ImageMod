@@ -1,0 +1,45 @@
+modLoader="javafml" # [MANDATORY]
+loaderVersion="${neo_loader_version_range}" # [MANDATORY]
+license="${mod_license}" # [MANDATORY]
+issueTrackerURL="${mod_issue_url}" # [OPTIONAl] # A URL to refer people to when problems occur with this mod
+
+[[mods]] # [MANDATORY] one or more mods
+    modId="${mod_id}" # [MANDATORY]
+    version="${mod_version}" # [MANDATORY]
+    displayName="${mod_name}" # [MANDATORY]
+    authors="${mod_authors}" # [OPTIONAL]
+    description="${mod_description}" # [MANDATORY]
+    #logoFile="" # [OPTIONAL] A file name (in the root of the mod JAR) containing a logo for display
+    #credits="" # [OPTIONAL]
+    #updateJSONURL="" # [OPTIONAL] A URL to query for updates for this mod. See the JSON update specification https://docs.neoforged.net/docs/misc/updatechecker/
+    #displayURL="" # [OPTIONAL] A URL for the "homepage" for this mod, displayed in the mod UI
+
+[[dependencies.${mod_id}]] # [OPTIONAl]
+    modId="neoforge" # [MANDATORY]
+    type="required" # [MANDATORY] required, optional, incompatible or discouraged
+    versionRange="${neo_version_range}" # [MANDATORY] The version range of the dependency
+    ordering="NONE" # [MANDATORY] mod loaded: BEFORE, AFTER, NONE - An ordering relationship for the dependency.
+    side="BOTH" # [MANDATORY] Side this dependency is applied on - BOTH, CLIENT, or SERVER
+    reason="Modloader required for functions to be applied" # [OPTIONAL] field describing why the dependency is required or why it is incompatible
+
+[[dependencies.${mod_id}]]
+    modId="minecraft"
+    type="required"
+    versionRange="${minecraft_version_range}"
+    ordering="NONE"
+    side="BOTH"
+    reason="Minecraft obviously required for mod to be appled" # [OPTIONAL] field describing why the dependency is required or why it is incompatible
+
+#[[mixins]] # The [[mixins]] block allows declaration of mixin config to FML so that it gets loaded.
+    #config="${mod_id}.mixins.json"
+    # The [[accessTransformers]] block allows you to declare where your AT file is.
+    # If this block is omitted, a fallback attempt will be made to load an AT from META-INF/accesstransformer.cfg
+    #[[accessTransformers]]
+    #file="META-INF/accesstransformer.cfg"
+    # The coremods config file path is not configurable and is always loaded from META-INF/coremods.json
+
+# Features are specific properties of the game environment, that you may want to declare you require. This example declares
+# that your mod requires GL version 3.2 or higher. Other features will be added. They are side aware so declaring this won't
+# stop your mod loading on the server for example.
+#[features.${mod_id}]
+    #openGLVersion="[3.2,)"

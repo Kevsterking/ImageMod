@@ -1,14 +1,12 @@
 package com.kevsterking.imagemod.neoforge.ImageBuilder;
 
-
 import com.kevsterking.imagemod.neoforge.ImageModClient;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.BlockModelShaper;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.BlockPos;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.Resource;
-import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.level.EmptyBlockGetter;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -21,8 +19,8 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashSet;
-import java.util.Optional;
 import java.util.Set;
 
 public class ImageBlock {
@@ -75,18 +73,19 @@ public class ImageBlock {
 
   private static BufferedImage get_texture(BlockState state) throws IOException {
     // Black magic, don't question it
-    ResourceManager resource_manager = Minecraft.getInstance().getResourceManager();
-    BlockModelShaper bms = Minecraft.getInstance().getModelManager().getBlockModelShaper();
-    assert Minecraft.getInstance().level != null;
-    TextureAtlasSprite sprite = bms.getParticleIcon(state, Minecraft.getInstance().level, BlockPos.ZERO);
-    ResourceLocation block_id = sprite.atlasLocation();
-    String path = sprite.contents().name().getPath();
-    ResourceLocation location = ResourceLocation.fromNamespaceAndPath(block_id.getNamespace(), "textures/" + path + ".png");
-    Optional<Resource> resource = resource_manager.getResource(location);
+    Minecraft mc = Minecraft.getInstance();
+    if (mc.level == null) throw new IOException("World level is null");
+    BlockModelShaper bms = mc.getModelManager().getBlockModelShaper();
+    TextureAtlasSprite sprite = bms.getParticleIcon(state, mc.level, BlockPos.ZERO);
+    Identifier location = sprite.contents().name().withPrefix("textures/").withSuffix(".png");
+    Resource resource = mc.getResourceManager().getResource(location)
+      .orElseThrow(() -> new IOException("Resource not found: " + location));
     ImageModClient.LOGGER.debug(location.getPath());
-    if (resource.isPresent()) {
-      return ImageIO.read(resource_manager.getResource(location).get().open());
-    } else throw new IOException("Resource is not present");
+    try (InputStream is = resource.open()) {
+        return ImageIO.read(is);
+    } catch (Exception e) {
+      throw new IOException("reading " + location + " failed: " + e.getMessage());
+    }
   }
 
 }

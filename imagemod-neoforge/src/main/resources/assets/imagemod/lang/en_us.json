@@ -1,0 +1,12 @@
+{
+  "itemGroup.imagemod": "Example Mod Tab",
+  "block.imagemod.example_block": "Example Block",
+  "item.imagemod.example_item": "Example Item",
+  "imagemod.configuration.title": "Image Mod Configs",
+  "imagemod.configuration.section.imagemod.common.toml": "Image Mod Configs",
+  "imagemod.configuration.section.imagemod.common.toml.title": "Image Mod Configs",
+  "imagemod.configuration.items": "Item List",
+  "imagemod.configuration.logDirtBlock": "Log Dirt Block",
+  "imagemod.configuration.magicNumberIntroduction": "Magic Number Text",
+  "imagemod.configuration.magicNumber": "Magic Number"
+}

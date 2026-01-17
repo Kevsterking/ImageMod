@@ -17,15 +17,16 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
-import net.minecraft.block.*;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.world.ClientWorld;
-import net.minecraft.command.CommandRegistryAccess;
-import net.minecraft.entity.Entity;
-import net.minecraft.registry.Registries;
-import net.minecraft.text.Text;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.commands.CommandBuildContext;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.block.Block;
+
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.FileNotFoundException;
@@ -46,7 +47,7 @@ public class ImageCommand {
   // Update block list
   public void update_block_list() {
     ImageModClient.LOGGER.info("Loading block list");
-    for (Block block : Registries.BLOCK.stream().toList()) {
+    for (Block block : BuiltInRegistries.BLOCK) {
       try {
         if (ImageBlock.filter_block(block)) {
           this.image_blocks.add(ImageBlock.get(block));
@@ -69,21 +70,22 @@ public class ImageCommand {
     CommandContext<FabricClientCommandSource> ctx
   ) throws CommandSyntaxException {
     // World in which the command was sent
-    MinecraftClient client = MinecraftClient.getInstance();
+
+    Minecraft client = Minecraft.getInstance();
 		FabricClientCommandSource source = ctx.getSource();
-    if (client.getServer() == null) {
-      source.sendError(Text.literal("Failed: Multiplayer image creation coming soon..."));
+    if (client.getSingleplayerServer() == null) {
+      source.sendError(Component.literal("Failed: Multiplayer image creation coming soon..."));
       return 0;
     }
-    ClientWorld level = source.getWorld();
+    ClientLevel level = source.getWorld();
     Entity entity = source.getEntity();
     if (entity == null) {
-      source.sendError(Text.literal("Failed: Source is not an entity"));
+      source.sendError(Component.literal("Failed: Source is not an entity"));
       return 0;
     }
-    Direction direction_view = entity.getFacing();
-    Direction direction_right = direction_view.rotateYClockwise();
-    BlockPos position = entity.getBlockPos().offset(direction_view, 2);
+    Direction direction_view = entity.getDirection();
+    Direction direction_right = direction_view.getClockWise();
+    BlockPos position = entity.blockPosition().relative(direction_view, 2);
     // Load arguments
     int input_width = 0, input_height = 0;
     boolean width_set = false, height_set = false;
@@ -101,10 +103,10 @@ public class ImageCommand {
     try {
       image = ImageIO.read(path.toFile());
     } catch (IOException e) {
-      throw new SimpleCommandExceptionType(Text.literal("Failed: Could not load image.")).create();
+      throw new SimpleCommandExceptionType(Component.literal("Failed: Could not load image.")).create();
     }
     if (image == null) {
-      throw new SimpleCommandExceptionType(Text.literal("Failed: Could not load image.")).create();
+      throw new SimpleCommandExceptionType(Component.literal("Failed: Could not load image.")).create();
     }
     int w, h;
     if (width_set && height_set) {
@@ -117,7 +119,7 @@ public class ImageCommand {
       h = input_height;
       w = (int) (input_height * ((double)image.getWidth() / image.getHeight()));
     } else {
-      throw new SimpleCommandExceptionType(Text.literal("Failed: No width or height set.")).create();
+      throw new SimpleCommandExceptionType(Component.literal("Failed: No width or height set.")).create();
     }
     // Create image
     image_builder.generate_async(image, w, h, (WorldStructure structure) -> {
@@ -130,12 +132,12 @@ public class ImageCommand {
           Direction.UP,
           direction_view,
           (Void v) -> {
-            source.sendFeedback(Text.literal(String.format("Successfully created %dx%d image", w, h)));
+            source.sendFeedback(Component.literal(String.format("Successfully created %dx%d image", w, h)));
             return null;
           }
         );
       } catch (Exception e) {
-        source.sendError(Text.literal("Failed: " + e.getMessage()));
+        source.sendError(Component.literal("Failed: " + e.getMessage()));
         return null;
       }
       return null;
@@ -146,7 +148,7 @@ public class ImageCommand {
   // Reload block list
   private int reload_execute(CommandContext<FabricClientCommandSource> ctx) throws CommandSyntaxException {
     this.update_block_list();
-    ctx.getSource().sendFeedback(Text.literal("Reloaded block list"));
+    ctx.getSource().sendFeedback(Component.literal("Reloaded block list"));
     return 1;
   }
 
@@ -154,10 +156,10 @@ public class ImageCommand {
   private int undo_execute(CommandContext<FabricClientCommandSource> ctx) throws CommandSyntaxException {
     world_transformer.undo_async((Exception e) -> {
       if (e != null) {
-        ctx.getSource().sendError(Text.literal("Failed: " + e.getMessage()));
+        ctx.getSource().sendError(Component.literal("Failed: " + e.getMessage()));
         return null;
       }
-      ctx.getSource().sendFeedback(Text.literal("Successfully reverted last WorldTransform"));
+      ctx.getSource().sendFeedback(Component.literal("Successfully reverted last WorldTransform"));
       return null;
     });
     return 1;
@@ -167,10 +169,10 @@ public class ImageCommand {
   private int redo_execute(CommandContext<FabricClientCommandSource> ctx) throws CommandSyntaxException {
     this.world_transformer.redo_async((Exception e) -> {
       if (e != null) {
-        ctx.getSource().sendError(Text.literal("Failed: " + e.getMessage()));
+        ctx.getSource().sendError(Component.literal("Failed: " + e.getMessage()));
         return null;
       }
-      ctx.getSource().sendFeedback(Text.literal("Successful redo of last undone WorldTransform"));
+      ctx.getSource().sendFeedback(Component.literal("Successful redo of last undone WorldTransform"));
       return null;
     });
     return 1;
@@ -183,12 +185,12 @@ public class ImageCommand {
     Path dir = this.directory_argument.get_path(ctx, "dir");
     try {
       this.image_argument.set_root_directory(dir.toString());
-      ctx.getSource().sendFeedback(Text.literal("Successfully set image directory to \"" + dir + "\""));
+      ctx.getSource().sendFeedback(Component.literal("Successfully set image directory to \"" + dir + "\""));
       return 1;
     } catch (NotDirectoryException e) {
-      ctx.getSource().sendError(Text.literal("Provided path is not a directory"));
+      ctx.getSource().sendError(Component.literal("Provided path is not a directory"));
     } catch (FileNotFoundException e) {
-      ctx.getSource().sendError(Text.literal("Provided path could not be found"));
+      ctx.getSource().sendError(Component.literal("Provided path could not be found"));
     }
     return 0;
   }
@@ -196,7 +198,7 @@ public class ImageCommand {
   // Register command structure
   public void register(
     CommandDispatcher<FabricClientCommandSource> ctx,
-    CommandRegistryAccess access
+    CommandBuildContext access
   ) {
 
     ImageModClient.LOGGER.info("Registering Commands...");
@@ -251,6 +253,5 @@ public class ImageCommand {
     ImageModClient.LOGGER.info("Commands Registered.");
 
   }
-
 
 }
