@@ -1,5 +1,6 @@
 package com.kevsterking.imagemod.fabric.ImageBuilder;
 
+import com.kevsterking.imagemod.core.ImageUtil;
 import com.kevsterking.imagemod.fabric.ImageModClient;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.BlockModelShaper;

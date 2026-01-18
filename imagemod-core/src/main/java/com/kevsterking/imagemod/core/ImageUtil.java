@@ -1,4 +1,4 @@
-package com.kevsterking.imagemod.fabric.ImageBuilder;
+package com.kevsterking.imagemod.core;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;

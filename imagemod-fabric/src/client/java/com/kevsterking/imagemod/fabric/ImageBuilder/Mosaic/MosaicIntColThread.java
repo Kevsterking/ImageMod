@@ -1,7 +1,7 @@
 package com.kevsterking.imagemod.fabric.ImageBuilder.Mosaic;
 
+import com.kevsterking.imagemod.core.ImageUtil;
 import com.kevsterking.imagemod.fabric.ImageBuilder.ImageBlock;
-import com.kevsterking.imagemod.fabric.ImageBuilder.ImageUtil;
 import com.kevsterking.imagemod.fabric.ImageModClient;
 import com.kevsterking.imagemod.fabric.WorldTransformer.WorldStructure;
 

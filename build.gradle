@@ -1,10 +1,49 @@
+import java.util.jar.Manifest
 
+plugins {
+    id 'java'
+    id 'com.gradleup.shadow' version '9.3.1'
+}
+
+def includeProject(Project p, String taskName) {
+    evaluationDependsOn(p.path)
+    def targetTask = p.tasks.getByName(taskName)
+    shadowJar.from(zipTree(targetTask.archiveFile)) {
+        exclude "META-INF/MANIFEST.MF"
+    }
+    shadowJar.doFirst {
+        def manifestFile = p.zipTree(targetTask.archiveFile).find { it.path.endsWith('MANIFEST.MF') }
+        if (manifestFile != null) {
+            manifestFile.withInputStream { is ->
+                Manifest subManifest = new Manifest(is)
+                def entriesToMerge = [:]
+                subManifest.mainAttributes.each { key, value ->
+                    if (key.toString() != 'Manifest-Version') {
+                        entriesToMerge[key.toString()] = value.toString()
+                    }
+                }
+                shadowJar.manifest {
+                    attributes(entriesToMerge)
+                }
+            }
+        }
+    }
+}
 
 tasks.named('wrapper', Wrapper).configure {
-    // Define wrapper values here so as to not have to always do so when updating gradlew.properties.
-    // Switching this to Wrapper.DistributionType.ALL will download the full gradle sources that comes with
-    // documentation attached on cursor hover of gradle classes and methods. However, this comes with increased
-    // file size for Gradle. If you do switch this to ALL, run the Gradle wrapper task twice afterwards.
-    // (Verify by checking gradle/wrapper/gradle-wrapper.properties to see if distributionUrl now points to `-all`)
     distributionType = Wrapper.DistributionType.BIN
+}
+
+dependencies {
+    implementation(project(":imagemod-core"))
+}
+
+shadowJar {
+    archiveBaseName.set(mod_id)
+    archiveVersion.set(mod_version)
+    archiveClassifier.set("")
+    // include core functions
+    from project(":imagemod-core").sourceSets.main.output
+    includeProject(project(":imagemod-neoforge"), "jar")
+    includeProject(project(":imagemod-fabric"), "remapJar")
 }
