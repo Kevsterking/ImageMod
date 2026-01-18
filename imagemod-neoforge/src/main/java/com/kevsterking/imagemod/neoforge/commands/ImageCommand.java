@@ -5,9 +5,9 @@ import com.kevsterking.imagemod.neoforge.ImageBuilder.Mosaic.MosaicIntColThread;
 import com.kevsterking.imagemod.neoforge.ImageModClient;
 import com.kevsterking.imagemod.neoforge.WorldTransformer.WorldStructure;
 import com.kevsterking.imagemod.neoforge.WorldTransformer.WorldTransformer;
-import com.kevsterking.imagemod.neoforge.util.DirectoryArgument;
-import com.kevsterking.imagemod.neoforge.util.ImageFileArgument;
-import com.kevsterking.imagemod.neoforge.util.PathArgument;
+import com.kevsterking.imagemod.neoforge.util.CommandArgumentDirectory;
+import com.kevsterking.imagemod.neoforge.util.CommandArgumentImage;
+import com.kevsterking.imagemod.neoforge.util.CommandArgumentPath;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
@@ -36,12 +36,18 @@ import java.util.ArrayList;
 
 public class ImageCommand {
 
-  private final PathArgument image_argument = new ImageFileArgument();
-  private final PathArgument directory_argument = new DirectoryArgument();
+  private final CommandArgumentPath arg_image = new CommandArgumentImage();
+  private final CommandArgumentPath arg_set_directory = new CommandArgumentDirectory();
 
   private final ArrayList<ImageBlock> image_blocks = new ArrayList<>();
   private final MosaicIntColThread image_builder = new MosaicIntColThread();
   private WorldTransformer world_transformer;
+
+  public ImageCommand() {
+    try {
+      this.arg_set_directory.set_root_directory(System.getProperty("user.home"));
+    } catch (Exception ignored) {}
+  }
 
   // Update block list
   public void update_block_list() {
@@ -96,7 +102,7 @@ public class ImageCommand {
       height_set = true;
     } catch (Exception ignored){}
     // Load image
-    Path path = this.image_argument.get_path(ctx, "src");
+    Path path = this.arg_image.get_path(ctx, "src");
     BufferedImage image = null;
     try {
       image = ImageIO.read(path.toFile());
@@ -178,9 +184,9 @@ public class ImageCommand {
 
   // Set the directory where the image create command looks for image files
   private int set_directory_execute(CommandContext<CommandSourceStack> ctx) {
-    Path dir = this.directory_argument.get_path(ctx, "dir");
+    Path dir = this.arg_set_directory.get_path(ctx, "dir");
     try {
-      this.image_argument.set_root_directory(dir.toString());
+      this.arg_image.set_root_directory(dir.toString());
       ctx.getSource().sendSuccess(() -> Component.literal("Successfully set image directory to \"" + dir + "\""), false);
       return 1;
     } catch (NotDirectoryException e) {
@@ -211,7 +217,7 @@ public class ImageCommand {
     LiteralArgumentBuilder<CommandSourceStack> hLiteral  	= Commands.literal("-height");
     LiteralArgumentBuilder<CommandSourceStack> whInfoLiteral = Commands.literal("~ ~");
 
-    RequiredArgumentBuilder<CommandSourceStack, Path> srcArgument = Commands.argument("src", image_argument);
+    RequiredArgumentBuilder<CommandSourceStack, Path> srcArgument = Commands.argument("src", arg_image);
 
     RequiredArgumentBuilder<CommandSourceStack, Integer> wArgument      = Commands.argument("width", IntegerArgumentType.integer());
     RequiredArgumentBuilder<CommandSourceStack, Integer> wArgumentFinal = Commands.argument("width", IntegerArgumentType.integer()).executes(this::create_execute);
@@ -235,7 +241,7 @@ public class ImageCommand {
 
     // SetDirectory
     LiteralArgumentBuilder<CommandSourceStack> setDirectoryLiteral = Commands.literal("setDirectory");
-    RequiredArgumentBuilder<CommandSourceStack, Path> directoryArgument  = Commands.argument("dir", directory_argument).executes(this::set_directory_execute);
+    RequiredArgumentBuilder<CommandSourceStack, Path> directoryArgument  = Commands.argument("dir", arg_set_directory).executes(this::set_directory_execute);
 
     setDirectoryLiteral.then(directoryArgument);
 

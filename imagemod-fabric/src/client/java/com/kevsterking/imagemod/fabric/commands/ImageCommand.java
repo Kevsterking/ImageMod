@@ -5,9 +5,9 @@ import com.kevsterking.imagemod.fabric.ImageBuilder.Mosaic.MosaicIntColThread;
 import com.kevsterking.imagemod.fabric.ImageModClient;
 import com.kevsterking.imagemod.fabric.WorldTransformer.WorldStructure;
 import com.kevsterking.imagemod.fabric.WorldTransformer.WorldTransformer;
-import com.kevsterking.imagemod.fabric.util.DirectoryArgument;
-import com.kevsterking.imagemod.fabric.util.ImageFileArgument;
-import com.kevsterking.imagemod.fabric.util.PathArgument;
+import com.kevsterking.imagemod.fabric.util.CommandArgumentDirectory;
+import com.kevsterking.imagemod.fabric.util.CommandArgumentImage;
+import com.kevsterking.imagemod.fabric.util.CommandArgumentPath;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
@@ -37,12 +37,18 @@ import java.util.ArrayList;
 
 public class ImageCommand {
 
-  private final PathArgument image_argument = new ImageFileArgument();
-  private final PathArgument directory_argument = new DirectoryArgument();
+  private final CommandArgumentPath arg_image = new CommandArgumentImage();
+  private final CommandArgumentPath arg_set_directory = new CommandArgumentDirectory();
 
   private final ArrayList<ImageBlock> image_blocks = new ArrayList<>();
   private final MosaicIntColThread image_builder = new MosaicIntColThread();
   private WorldTransformer world_transformer;
+
+  public ImageCommand() {
+    try {
+      this.arg_set_directory.set_root_directory(System.getProperty("user.home"));
+    } catch (Exception ignored) {}
+  }
 
   // Update block list
   public void update_block_list() {
@@ -98,7 +104,7 @@ public class ImageCommand {
       height_set = true;
     } catch (Exception ignored){}
     // Load image
-    Path path = this.image_argument.get_path(ctx, "src");
+    Path path = this.arg_image.get_path(ctx, "src");
     BufferedImage image = null;
     try {
       image = ImageIO.read(path.toFile());
@@ -182,9 +188,9 @@ public class ImageCommand {
   private int set_directory_execute(
     CommandContext<FabricClientCommandSource> ctx
   ) {
-    Path dir = this.directory_argument.get_path(ctx, "dir");
+    Path dir = this.arg_set_directory.get_path(ctx, "dir");
     try {
-      this.image_argument.set_root_directory(dir.toString());
+      this.arg_image.set_root_directory(dir.toString());
       ctx.getSource().sendFeedback(Component.literal("Successfully set image directory to \"" + dir + "\""));
       return 1;
     } catch (NotDirectoryException e) {
@@ -218,7 +224,7 @@ public class ImageCommand {
     LiteralArgumentBuilder<FabricClientCommandSource> hLiteral  	= ClientCommandManager.literal("-height");
     LiteralArgumentBuilder<FabricClientCommandSource> whInfoLiteral = ClientCommandManager.literal("~ ~");
 
-    RequiredArgumentBuilder<FabricClientCommandSource, Path> srcArgument = ClientCommandManager.argument("src", image_argument);
+    RequiredArgumentBuilder<FabricClientCommandSource, Path> srcArgument = ClientCommandManager.argument("src", arg_image);
 
     RequiredArgumentBuilder<FabricClientCommandSource, Integer> wArgument      = ClientCommandManager.argument("width", IntegerArgumentType.integer());
     RequiredArgumentBuilder<FabricClientCommandSource, Integer> wArgumentFinal = ClientCommandManager.argument("width", IntegerArgumentType.integer()).executes(this::create_execute);
@@ -242,7 +248,7 @@ public class ImageCommand {
 
     // SetDirectory
     LiteralArgumentBuilder<FabricClientCommandSource> setDirectoryLiteral = ClientCommandManager.literal("setDirectory");
-    RequiredArgumentBuilder<FabricClientCommandSource, Path> directoryArgument  = ClientCommandManager.argument("dir", directory_argument).executes(this::set_directory_execute);
+    RequiredArgumentBuilder<FabricClientCommandSource, Path> directoryArgument  = ClientCommandManager.argument("dir", arg_set_directory).executes(this::set_directory_execute);
 
     setDirectoryLiteral.then(directoryArgument);
 

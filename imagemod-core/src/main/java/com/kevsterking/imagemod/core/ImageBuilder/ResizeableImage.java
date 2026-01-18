@@ -14,8 +14,8 @@ public class ResizeableImage {
     public int   height;
 
     public ResizeableImage(BufferedImage img) {
-        this.rootImage  = ensureType(img);
-        this.buffer     = ResizeableImage.copyBuffer(this.rootImage.getData().getDataBuffer());
+        this.rootImage  = ensure_type(img);
+        this.buffer     = ResizeableImage.copy_buffer(this.rootImage.getData().getDataBuffer());
         this.width      = img.getWidth();
         this.height     = img.getHeight();
     }
@@ -34,7 +34,7 @@ public class ResizeableImage {
         return new ResizeableImage(resizedImage);
     }
 
-    public static ResizeableImage getTransparant(final int w, final int h) {
+    public static ResizeableImage get_transparent(final int w, final int h) {
         BufferedImage ret = new BufferedImage(w, h, BufferedImage.TYPE_4BYTE_ABGR);
         Graphics2D g2d = ret.createGraphics();
         g2d.setColor(new Color(0, 0, 0, 0));
@@ -43,7 +43,7 @@ public class ResizeableImage {
         return new ResizeableImage(ret);
     }
 
-    public ResizeableImage subImage(final int x, final int y, final int w, final int h) {
+    public ResizeableImage sub_image(final int x, final int y, final int w, final int h) {
         int[] ret = new int[w*h*4];
         int idx = 0;
         for (int yy = y; yy < y+h; yy++) {
@@ -58,23 +58,23 @@ public class ResizeableImage {
         return new ResizeableImage(this.rootImage, ret, w, h);
     }
 
-    public int getSimilarity(ResizeableImage img) {
+    public int get_similarity(ResizeableImage img) {
         int ret = 0;
         if (img.buffer.length != this.buffer.length) {
             return Integer.MAX_VALUE;
         }
         for (int i = 0; i < img.buffer.length; i+=4) {
-            double colorFactor = (double) Math.min(img.buffer[i], this.buffer[i]) / 255;
+            double color_factor = (double) Math.min(img.buffer[i], this.buffer[i]) / 255;
             int dalpha = Math.abs(img.buffer[i]   - this.buffer[i]) * 3;
             int db     = Math.abs(img.buffer[i+1] - this.buffer[i+1]);
             int dg     = Math.abs(img.buffer[i+2] - this.buffer[i+2]);
             int dr     = Math.abs(img.buffer[i+3] - this.buffer[i+3]);
-            ret += (int) ((1.0 - colorFactor) * dalpha + colorFactor * (db + dg + dr));
+            ret += (int) ((1.0 - color_factor) * dalpha + color_factor * (db + dg + dr));
         }
         return ret;
     }
 
-    private static int[] copyBuffer(DataBuffer buf) {
+    private static int[] copy_buffer(DataBuffer buf) {
         int[] ret = new int[buf.getSize()];
         for (int i = 0; i < ret.length; i++) {
             ret[i] = buf.getElem(i);
@@ -82,7 +82,7 @@ public class ResizeableImage {
         return ret;
     }
 
-    private BufferedImage ensureType(BufferedImage image) {
+    private BufferedImage ensure_type(BufferedImage image) {
         if (image.getType() != BufferedImage.TYPE_4BYTE_ABGR) {
             BufferedImage converted = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_4BYTE_ABGR);
             converted.getGraphics().drawImage(image, 0, 0, null);

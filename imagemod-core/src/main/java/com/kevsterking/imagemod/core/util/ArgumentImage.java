@@ -3,7 +3,7 @@ package com.kevsterking.imagemod.core.util;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-public class ImageFileArgument extends PathArgument {
+public class ArgumentImage extends ArgumentPath {
     @Override
     public boolean filter(Path path) {
         try {

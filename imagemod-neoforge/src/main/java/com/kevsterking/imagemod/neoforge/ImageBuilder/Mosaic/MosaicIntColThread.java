@@ -1,7 +1,7 @@
 package com.kevsterking.imagemod.neoforge.ImageBuilder.Mosaic;
 
+import com.kevsterking.imagemod.core.ImageUtil;
 import com.kevsterking.imagemod.neoforge.ImageBuilder.ImageBlock;
-import com.kevsterking.imagemod.neoforge.ImageBuilder.ImageUtil;
 import com.kevsterking.imagemod.neoforge.ImageModClient;
 import com.kevsterking.imagemod.neoforge.WorldTransformer.WorldStructure;
 

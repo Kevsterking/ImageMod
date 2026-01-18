@@ -3,9 +3,9 @@ package com.kevsterking.imagemod.fabric.util;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-public class ImageFileArgument extends PathArgument {
+public class CommandArgumentImage extends CommandArgumentPath {
     @Override
-    public boolean filter_path(Path path) {
+    public boolean filter(Path path) {
         try {
             String type = Files.probeContentType(path);
             if (
