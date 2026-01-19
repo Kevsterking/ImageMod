@@ -1,9 +1,8 @@
-package com.kevsterking.imagemod.fabric.ImageBuilder.Mosaic;
+package com.kevsterking.imagemod.core.mosaic;
 
-import com.kevsterking.imagemod.core.ImageUtil;
-import com.kevsterking.imagemod.fabric.ImageBuilder.ImageBlock;
-import com.kevsterking.imagemod.fabric.ImageModClient;
-import com.kevsterking.imagemod.fabric.WorldTransformer.WorldStructure;
+import com.kevsterking.imagemod.core.ImageBlock;
+import com.kevsterking.imagemod.core.util.ImageUtil;
+import com.kevsterking.imagemod.core.transform.WorldStructure;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -32,9 +31,7 @@ public class MosaicIntColThread extends MosaicGenerator<IntColorVector, Buffered
     for (int y = 0; y < tile_rows; y++) {
       try {
         worker[y].join();
-      } catch(InterruptedException e) {
-        ImageModClient.LOGGER.error("Failed to join threads: {}", e.getMessage());
-      }
+      } catch(InterruptedException ignore) {}
     }
   }
 

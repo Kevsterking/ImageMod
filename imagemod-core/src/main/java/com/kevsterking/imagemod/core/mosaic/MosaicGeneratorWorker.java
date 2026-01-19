@@ -1,4 +1,4 @@
-package com.kevsterking.imagemod.neoforge.ImageBuilder.Mosaic;
+package com.kevsterking.imagemod.core.mosaic;
 
 import java.util.function.Function;
 

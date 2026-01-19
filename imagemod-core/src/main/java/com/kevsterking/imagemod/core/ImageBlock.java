@@ -1,7 +1,6 @@
-package com.kevsterking.imagemod.neoforge.ImageBuilder;
+package com.kevsterking.imagemod.core;
 
-import com.kevsterking.imagemod.core.ImageUtil;
-import com.kevsterking.imagemod.neoforge.ImageModClient;
+import com.kevsterking.imagemod.core.util.ImageUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.BlockModelShaper;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -15,7 +14,6 @@ import net.minecraft.world.level.block.CoralBlock;
 import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.minecraft.world.phys.shapes.VoxelShape;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -62,11 +60,11 @@ public class ImageBlock {
   // true -> keep block, false -> don't use block
   public static boolean filter_block(Block block) throws Exception {
     BlockState state = block.defaultBlockState();
-    VoxelShape vs = state.getCollisionShape(EmptyBlockGetter.INSTANCE, BlockPos.ZERO);
-    if (!Block.isShapeFullBlock(vs)) throw new Exception("Is not full block");
+    if (!state.isCollisionShapeFullBlock(EmptyBlockGetter.INSTANCE, BlockPos.ZERO)) throw new Exception("Is not full block");
     if (block.hasDynamicShape()) throw new Exception("Has dynamic shape");
-    if (state.getLightEmission(EmptyBlockGetter.INSTANCE, BlockPos.ZERO) != 0) throw new Exception("Emits light");
-    if (state.hasProperty(BlockStateProperties.FACING) || state.hasProperty(BlockStateProperties.HORIZONTAL_FACING)) throw new Exception("Directional block");if (block instanceof CoralBlock) throw new Exception("Is coral block");
+    if (state.getLightEmission() != 0) throw new Exception("Emits light");
+    if (state.hasProperty(BlockStateProperties.FACING) || state.hasProperty(BlockStateProperties.HORIZONTAL_FACING)) throw new Exception("Directional block");
+    if (block instanceof CoralBlock) throw new Exception("Is coral block");
     if (block instanceof LeavesBlock) throw new Exception("Is leaves block");
     if (block_blacklist.contains(block)) throw new Exception("Is blacklisted");
     return true;
@@ -77,11 +75,10 @@ public class ImageBlock {
     Minecraft mc = Minecraft.getInstance();
     if (mc.level == null) throw new IOException("World level is null");
     BlockModelShaper bms = mc.getModelManager().getBlockModelShaper();
-    TextureAtlasSprite sprite = bms.getParticleIcon(state, mc.level, BlockPos.ZERO);
+    TextureAtlasSprite sprite = bms.getParticleIcon(state);
     Identifier location = sprite.contents().name().withPrefix("textures/").withSuffix(".png");
     Resource resource = mc.getResourceManager().getResource(location)
       .orElseThrow(() -> new IOException("Resource not found: " + location));
-    ImageModClient.LOGGER.debug(location.getPath());
     try (InputStream is = resource.open()) {
         return ImageIO.read(is);
     } catch (Exception e) {

@@ -1,6 +1,5 @@
 plugins {
 	id 'net.fabricmc.fabric-loom-remap' version "${fabric_loom_version}"
-	id 'maven-publish'
 }
 
 version = project.mod_version
@@ -16,7 +15,7 @@ loom {
 }
 
 dependencies {
-	implementation(project(":imagemod-core"))
+	implementation project(path: ":imagemod-core", configuration: "namedElements")
 	minecraft "com.mojang:minecraft:${project.fabric_minecraft_version}"
 	mappings loom.officialMojangMappings()
 	modImplementation "net.fabricmc:fabric-loader:${project.fabric_loader_version}"

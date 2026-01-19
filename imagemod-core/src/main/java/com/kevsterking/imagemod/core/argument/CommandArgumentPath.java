@@ -1,7 +1,6 @@
-package com.kevsterking.imagemod.fabric.util;
+package com.kevsterking.imagemod.core.argument;
 
 import com.kevsterking.imagemod.core.util.ArgumentPath;
-import com.kevsterking.imagemod.fabric.ImageModClient;
 import com.mojang.brigadier.LiteralMessage;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.arguments.ArgumentType;
@@ -11,7 +10,6 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
-import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 
 import java.io.FileNotFoundException;
 import java.nio.file.Path;
@@ -28,10 +26,6 @@ public class CommandArgumentPath extends ArgumentPath implements ArgumentType<Pa
 
   private static final SimpleCommandExceptionType PATH_NOT_FOUND =
     new SimpleCommandExceptionType(new LiteralMessage("Path not found"));
-
-  public Path get_path(final CommandContext<FabricClientCommandSource> context, final String name) {
-    return context.getArgument(name, Path.class);
-  }
 
   @Override
   // Get the path for file given input

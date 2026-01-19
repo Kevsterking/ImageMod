@@ -1,11 +1,11 @@
-package com.kevsterking.imagemod.neoforge.ImageBuilder.Mosaic;
+package com.kevsterking.imagemod.core.mosaic;
 
-import com.kevsterking.imagemod.neoforge.WorldTransformer.WorldStructure;
+import com.kevsterking.imagemod.core.transform.WorldStructure;
 
 public class MosaicIntColThreadWorker extends Thread {
 
   private WorldStructure res;
-  private MosaicIntColThread operation;
+  private com.kevsterking.imagemod.core.mosaic.MosaicIntColThread operation;
   private int cols, row;
 
   public void run() {

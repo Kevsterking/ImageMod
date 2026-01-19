@@ -1,4 +1,4 @@
-package com.kevsterking.imagemod.fabric.WorldTransformer;
+package com.kevsterking.imagemod.core.transform;
 
 import net.minecraft.world.level.block.state.BlockState;
 

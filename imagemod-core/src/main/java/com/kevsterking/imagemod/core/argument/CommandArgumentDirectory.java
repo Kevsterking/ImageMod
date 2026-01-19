@@ -1,4 +1,4 @@
-package com.kevsterking.imagemod.neoforge.util;
+package com.kevsterking.imagemod.core.argument;
 
 import com.mojang.brigadier.LiteralMessage;
 import com.mojang.brigadier.StringReader;

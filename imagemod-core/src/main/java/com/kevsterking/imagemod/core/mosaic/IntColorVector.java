@@ -1,4 +1,4 @@
-package com.kevsterking.imagemod.fabric.ImageBuilder.Mosaic;
+package com.kevsterking.imagemod.core.mosaic;
 
 public class IntColorVector {
   public int[] a;

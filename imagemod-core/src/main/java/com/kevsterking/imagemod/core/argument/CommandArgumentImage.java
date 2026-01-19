@@ -1,4 +1,4 @@
-package com.kevsterking.imagemod.fabric.util;
+package com.kevsterking.imagemod.core.argument;
 
 import java.nio.file.Files;
 import java.nio.file.Path;

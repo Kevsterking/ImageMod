@@ -1,12 +1,27 @@
 plugins {
-    id 'java-library'           // or just 'java' if you don't need 'api' configuration
+    id 'fabric-loom' version "${fabric_loom_version}"
+    id 'maven-publish'
 }
 
-java {
-    withSourcesJar()
-    sourceCompatibility = JavaVersion.VERSION_21
-    targetCompatibility = JavaVersion.VERSION_21
+repositories {
+    maven {
+        name = 'ParchmentMC'
+        url = 'https://maven.parchmentmc.org'
+    }
 }
 
 group = "${project.group}.core"
 version = project.version
+
+dependencies {
+    minecraft "com.mojang:minecraft:${project.core_minecraft_version}"
+    mappings loom.layered() {
+        officialMojangMappings()
+        parchment("org.parchmentmc.data:parchment-1.21:${project.core_parchment_mappings_version}@zip")
+    }
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
+}

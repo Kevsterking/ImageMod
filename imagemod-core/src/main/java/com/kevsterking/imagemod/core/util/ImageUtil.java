@@ -1,4 +1,4 @@
-package com.kevsterking.imagemod.core;
+package com.kevsterking.imagemod.core.util;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;

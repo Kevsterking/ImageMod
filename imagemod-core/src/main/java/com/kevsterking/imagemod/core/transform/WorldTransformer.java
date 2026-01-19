@@ -1,10 +1,7 @@
-package com.kevsterking.imagemod.fabric.WorldTransformer;
+package com.kevsterking.imagemod.core.transform;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.server.IntegratedServer;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 
 import java.util.Stack;
 import java.util.function.Function;
@@ -34,7 +31,12 @@ public class WorldTransformer {
   }
 
   public void undo_async(Function<Exception,Void> callback) {
-    this.server.execute(() -> {
+    IntegratedServer server = Minecraft.getInstance().getSingleplayerServer();
+    if (server == null) {
+      callback.apply(new Exception("Failed to perform undo: server not found"));
+      return;
+    }
+    server.execute(() -> {
       try {
         this.undo();
         callback.apply(null);
@@ -56,27 +58,19 @@ public class WorldTransformer {
   }
 
   public void place_async(
-		ClientLevel world,
     WorldStructure structure,
-		BlockPos position,
-		Direction direction_x,
-		Direction direction_y,
-		Direction direction_z,
-		Function<Void, Void> callback
-	) throws Exception {
-    if (this.server == null) throw new Exception("Multiplayer support comming soon...");
-    WorldTransform ret = new WorldTransform(
-      this.server.getLevel(world.dimension()),
-      position,
-      direction_x,
-      direction_y,
-      direction_z,
-      structure
-    );
-    this.server.execute(() -> {
+    WorldTransformCreation creation,
+    Function<Void, Void> callback
+  ) throws Exception {
+    if (this.server == null) {
+      throw new Exception("Multiplayer not supported yet...");
+    }
+    server.execute(() -> {
+      WorldTransform ret = new WorldTransform(server.getLevel(creation.level.dimension()), structure, creation);
       ret.perform_transform();
       this.undo_stack.push(ret);
       callback.apply(null);
     });
   }
+
 }

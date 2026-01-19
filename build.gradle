@@ -35,7 +35,7 @@ tasks.named('wrapper', Wrapper).configure {
 }
 
 dependencies {
-    implementation(project(":imagemod-core"))
+    //implementation(project(":imagemod-core"))
 }
 
 shadowJar {
@@ -43,7 +43,7 @@ shadowJar {
     archiveVersion.set(mod_version)
     archiveClassifier.set("")
     // include core functions
-    from project(":imagemod-core").sourceSets.main.output
+    //from project(":imagemod-core").sourceSets.main.output
     includeProject(project(":imagemod-neoforge"), "jar")
     includeProject(project(":imagemod-fabric"), "remapJar")
 }
