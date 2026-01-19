@@ -1,6 +1,5 @@
-package com.kevsterking.imagemod.core;
+package com.kevsterking.imagemod.core.util;
 
-import com.kevsterking.imagemod.core.util.ImageUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.BlockModelShaper;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;

@@ -1,6 +1,6 @@
 package com.kevsterking.imagemod.core.mosaic;
 
-import com.kevsterking.imagemod.core.ImageBlock;
+import com.kevsterking.imagemod.core.util.ImageBlock;
 import com.kevsterking.imagemod.core.util.ImageUtil;
 import com.kevsterking.imagemod.core.transform.WorldStructure;
 

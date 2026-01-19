@@ -19,15 +19,9 @@ tasks.withType(JavaCompile).configureEach {
 
 neoForge {
     version = project.neo_version
-    parchment {
-        mappingsVersion = project.neo_parchment_mappings_version
-        minecraftVersion = project.neo_parchment_minecraft_version
-    }
     runs {
         client {
             client()
-
-            // Comma-separated list of namespaces to load gametests from. Empty = all namespaces.
             systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
         }
         configureEach {
